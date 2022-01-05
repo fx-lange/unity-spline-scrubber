@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cinemachine;
-using Path;
+using PathScrubber.Path;
 using UnityEngine;
 
 namespace CinePath

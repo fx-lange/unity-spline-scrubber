@@ -2,7 +2,8 @@
     "name": "PathScrubber",
     "rootNamespace": "PathScrubber",
     "references": [
-        "GUID:f06555f75b070af458a003d92f9efb00"
+        "GUID:f06555f75b070af458a003d92f9efb00",
+        "GUID:4307f53044263cf4b835bd812fc161a4"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

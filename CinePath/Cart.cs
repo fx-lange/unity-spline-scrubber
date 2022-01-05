@@ -1,6 +1,6 @@
 using UnityEngine;
 using Cinemachine;
-using Path;
+using PathScrubber.Path;
 
 namespace CinePath
 {
