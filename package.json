@@ -10,7 +10,6 @@
     "url": "felixlange.dev"
   },
   "dependencies": {
-    "com.unity.cinemachine": "2.8.3",
     "com.unity.timeline": "1.6.3"
   },
   "keywords": [
