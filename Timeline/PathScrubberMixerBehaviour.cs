@@ -1,8 +1,7 @@
-using Path;
-using UnityEngine;
+using PathScrubber.Path;
 using UnityEngine.Playables;
 
-namespace PathScrubber
+namespace PathScrubber.Timeline
 {
     public class PathScrubberMixerBehaviour : PlayableBehaviour
     {

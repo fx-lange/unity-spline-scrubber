@@ -1,4 +1,4 @@
-namespace Path
+namespace PathScrubber.Path
 {
     public interface IPath
     {

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEditor.Timeline;
 
-namespace PathScrubber.Editor
+namespace PathScrubber.Timeline.Editor
 {
     [CustomEditor(typeof(PathScrubberClip))]
     public class PathScrubberInspector : UnityEditor.Editor

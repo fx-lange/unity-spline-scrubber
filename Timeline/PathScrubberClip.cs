@@ -1,10 +1,10 @@
 using System;
-using Path;
+using PathScrubber.Path;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
-namespace PathScrubber
+namespace PathScrubber.Timeline
 {
     [Serializable]
     public class PathScrubberClip : PlayableAsset, ITimelineClipAsset

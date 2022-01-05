@@ -1,13 +1,13 @@
 using System.ComponentModel;
-using Path;
+using PathScrubber.Path;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
-namespace PathScrubber
+namespace PathScrubber.Timeline
 {
     [TrackClipType(typeof(PathScrubberClip))]
-    [DisplayName("PathScrubber Track")]
+    [DisplayName("PathScrubber/Track")]
     [TrackBindingType(typeof(PathingObjBase))]
     [TrackColor(0f, 0.4150943f, 0.8301887f)]
     public class PathScrubberTrack : TrackAsset
