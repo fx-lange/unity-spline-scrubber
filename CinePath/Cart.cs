@@ -7,7 +7,7 @@ namespace CinePath
     public class Cart : PathingObjBase
     {
         [SerializeField] private CinemachineDollyCart cart;
-        [SerializeField] private Transform offsetAnchor;
+        [SerializeField] private Transform anchor;
 
         private CartPath path;
 
@@ -26,14 +26,14 @@ namespace CinePath
         public override void SetPosition(float t, Vector3 offset, bool backwards = false)
         {
             cart.m_Position = t;
-            offsetAnchor.localPosition = offset;
+            anchor.localPosition = offset;
             if (backwards)
             {
-                transform.localRotation = Quaternion.LookRotation(Vector3.back);
+                anchor.localRotation = Quaternion.LookRotation(Vector3.back);
             }
             else
             {
-                transform.localRotation = Quaternion.identity;
+                anchor.localRotation = Quaternion.identity;
             }
         }
 
