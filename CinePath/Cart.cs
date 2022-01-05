@@ -23,9 +23,9 @@ namespace CinePath
             cart.m_Speed = 0;
         }
 
-        public override void SetPosition(float t, Vector3 offset, bool backwards = false)
+        public override void Set(float posNormalized, float speed, Vector3 offset, bool backwards = false)
         {
-            cart.m_Position = t;
+            cart.m_Position = posNormalized;
             anchor.localPosition = offset;
             if (backwards)
             {
