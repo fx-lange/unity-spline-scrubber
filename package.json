@@ -1,6 +1,6 @@
 {
   "name": "com.fxlange.spline-scrubber",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "displayName": "Spline Scrubber",
   "description": "Timeline integration for splines",
   "unity": "2021.2",
@@ -8,6 +8,10 @@
     "name": "Felix Lange",
     "email": "mail@felixlange.dev",
     "url": "felixlange.dev"
+  },
+  "dependencies": {
+    "com.unity.cinemachine": "2.8.3",
+    "com.unity.timeline": "1.6.3"
   },
   "keywords": [
     "spline",

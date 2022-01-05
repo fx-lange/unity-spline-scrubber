@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Path
+namespace PathScrubber.Path
 {
     public interface IPathingObj
     {
