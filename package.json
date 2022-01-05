@@ -1,6 +1,6 @@
 {
   "name": "com.fxlange.spline-scrubber",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "displayName": "Spline Scrubber",
   "description": "Timeline integration for splines",
   "unity": "2021.2",

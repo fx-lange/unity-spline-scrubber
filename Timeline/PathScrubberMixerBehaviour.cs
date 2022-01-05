@@ -7,9 +7,9 @@ namespace PathScrubber.Timeline
     {
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
-            PathingObjBase trackBinding = playerData as PathingObjBase;
+            PathingObjBase pathingObj = playerData as PathingObjBase;
 
-            if (!trackBinding)
+            if (!pathingObj)
                 return;
 
             int inputCount = playable.GetInputCount ();
@@ -27,10 +27,10 @@ namespace PathScrubber.Timeline
                 }
 
                 activeInputCount++;
-                trackBinding.Paused = true;
+                pathingObj.Paused = true;
             
                 var path = input.path;
-                trackBinding.SetPath(path);
+                pathingObj.SetPath(path);
 
                 var pos = inputPlayable.GetTime() * input.speed;
                 var length = input.path.Length;
@@ -41,12 +41,12 @@ namespace PathScrubber.Timeline
                 {
                     tCurved = 1 - tCurved;
                 }
-                trackBinding.SetPosition(tCurved, input.offset, input.backwards);
+                pathingObj.Set(tCurved, input.speed, input.offset, input.backwards);
             }
 
             if (activeInputCount == 0)
             {
-                trackBinding.Paused = false;
+                pathingObj.Paused = false;
             }
         }
     }
