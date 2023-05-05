@@ -10,7 +10,8 @@
     "url": "felixlange.dev"
   },
   "dependencies": {
-    "com.unity.timeline": "1.6.3"
+    "com.unity.timeline": "1.6.3",
+    "com.unity.splines": "2.2.1"
   },
   "keywords": [
     "spline",
