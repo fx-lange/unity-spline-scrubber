@@ -8,6 +8,8 @@ namespace CinePath
     {
         [SerializeField] private CinemachineDollyCart cart;
         [SerializeField] private Transform anchor;
+        
+        public float Speed { get; private set; }
 
         private CartPath path;
 
@@ -26,6 +28,8 @@ namespace CinePath
         public override void Set(float posNormalized, float speed, Vector3 offset, bool backwards = false)
         {
             cart.m_Position = posNormalized;
+            Speed = speed;
+            
             anchor.localPosition = offset;
             if (backwards)
             {
