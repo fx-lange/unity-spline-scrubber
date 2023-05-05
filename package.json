@@ -1,13 +1,17 @@
 {
   "name": "com.fxlange.spline-scrubber",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "displayName": "Spline Scrubber",
   "description": "Timeline integration for splines",
-  "unity": "2021.2",
+  "unity": "2022.2",
   "author": {
     "name": "Felix Lange",
     "email": "mail@felixlange.dev",
     "url": "felixlange.dev"
+  },
+  "dependencies": {
+    "com.unity.timeline": "1.6.3",
+    "com.unity.splines": "2.2.1"
   },
   "keywords": [
     "spline",

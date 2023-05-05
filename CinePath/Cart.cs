@@ -1,6 +1,6 @@
 using UnityEngine;
 using Cinemachine;
-using Path;
+using PathScrubber.Path;
 
 namespace CinePath
 {
@@ -23,7 +23,7 @@ namespace CinePath
             cart.m_Speed = 0;
         }
 
-        public override void SetPosition(float t, Vector3 offset, bool backwards = false)
+        public override void Set(float t, float speed, Vector3 offset, bool backwards = false)
         {
             cart.m_Position = t;
             offsetAnchor.localPosition = offset;

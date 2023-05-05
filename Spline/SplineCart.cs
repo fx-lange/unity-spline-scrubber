@@ -1,7 +1,7 @@
-using Path;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
+using PathScrubber.Path;
+using Unity.Mathematics;
 
 namespace Spline
 {
@@ -18,9 +18,9 @@ namespace Spline
             set => spline.enabled = value;
         }
         
-        public override void SetPosition(float pos, Vector3 offset, bool backwards = false)
+        public override void Set(float posNormalized, float speed, Vector3 offset, bool backwards = false)
         {
-            spline.Evaluate(pos, out float3 worldPos, out float3 tangent, out float3 upVector);
+            spline.Evaluate(posNormalized, out float3 worldPos, out float3 tangent, out float3 upVector);
 
             if (backwards)
             {

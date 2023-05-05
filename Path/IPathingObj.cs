@@ -1,9 +1,9 @@
 using UnityEngine;
 
-namespace Path
+namespace PathScrubber.Path
 {
     public interface IPathingObj
     {
-        public void SetPosition(float t, Vector3 offset, bool backwards = false);
+        public void Set(float posNormalized, float speed, Vector3 offset, bool backwards = false);
     }
 }

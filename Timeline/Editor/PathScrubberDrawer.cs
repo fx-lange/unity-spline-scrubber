@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace PathScrubber.Editor
+namespace PathScrubber.Timeline.Editor
 {
     [CustomPropertyDrawer(typeof(PathScrubberBehaviour))]
     public class PathScrubberDrawer : PropertyDrawer

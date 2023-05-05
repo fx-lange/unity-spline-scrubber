@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
-using Path;
+using PathScrubber.Path;
 using UnityEngine;
 using UnityEngine.Splines;
 
