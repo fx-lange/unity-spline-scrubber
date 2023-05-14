@@ -1,19 +1,20 @@
 using UnityEditor;
 using UnityEditor.Timeline;
 
-namespace PathScrubber.Timeline.Editor
+namespace SplineScrubber.Timeline.Editor
 {
-    [CustomEditor(typeof(PathScrubberClip))]
-    public class PathScrubberInspector : UnityEditor.Editor
+    [CustomEditor(typeof(SplineScrubberClip))]
+    public class SplineScrubberInspector : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
+            // Debug.Log("SplineScrubberInspector::OnGui");
             base.OnInspectorGUI();
             
             var graph = TimelineEditor.inspectedDirector.playableGraph;
             var resolver = graph.GetResolver();
 
-            var clip = target as PathScrubberClip;
+            var clip = target as SplineScrubberClip;
             var path = clip.path.Resolve(resolver);
             if (path != null)
             {

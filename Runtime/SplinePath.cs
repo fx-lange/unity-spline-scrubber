@@ -1,19 +1,16 @@
-using System;
-using System.Collections;
 using System.Threading.Tasks;
-using PathScrubber.Path;
 using UnityEngine;
 using UnityEngine.Splines;
 
-namespace Spline
+namespace SplineScrubber
 {
     [ExecuteAlways]
-    public class SplinePath : PathBase//MonoBehaviour, IPath
+    public class SplinePath : MonoBehaviour
     {
         [SerializeField] private SplineContainer spline;
 
         public SplineContainer Spline => spline;
-        public override float Length => length;
+        public float Length => length;
 
         [HideInInspector]
         public float length;

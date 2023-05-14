@@ -1,14 +1,13 @@
 using System;
-using PathScrubber.Path;
 using UnityEngine;
 using UnityEngine.Playables;
 
-namespace PathScrubber.Timeline
+namespace SplineScrubber.Timeline
 {
     [Serializable]
-    public class PathScrubberBehaviour : PlayableBehaviour
+    public class SplineScrubberBehaviour : PlayableBehaviour
     {
-        public PathBase path;
+        public SplinePath path;
     
         [Min(0.0001f)]public float speed = 1;
         public Vector3 offset = Vector3.zero;

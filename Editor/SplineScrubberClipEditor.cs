@@ -1,14 +1,16 @@
 using UnityEditor.Timeline;
+using UnityEngine;
 using UnityEngine.Timeline;
 
-namespace PathScrubber.Timeline.Editor
+namespace SplineScrubber.Timeline.Editor
 {
-    [CustomTimelineEditor(typeof(PathScrubberClip))]
-    public class PathScrubberClipEditor : ClipEditor
+    [CustomTimelineEditor(typeof(SplineScrubberClip))]
+    public class SplineScrubberClipEditor : ClipEditor
     {
         public override void OnCreate(TimelineClip clip, TrackAsset track, TimelineClip clonedFrom)
         {
-            var asset = clip.asset as PathScrubberClip;
+            Debug.Log("ClipEditor::Create");
+            var asset = clip.asset as SplineScrubberClip;
             clip.duration = asset.duration - clip.clipIn;
         }
 

@@ -1,10 +1,10 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace PathScrubber.Timeline.Editor
+namespace SplineScrubber.Timeline.Editor
 {
-    [CustomPropertyDrawer(typeof(PathScrubberBehaviour))]
-    public class PathScrubberDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(SplineScrubberBehaviour))]
+    public class SplineScrubberDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight (SerializedProperty property, GUIContent label)
         {

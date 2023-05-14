@@ -1,15 +1,14 @@
-using PathScrubber.Path;
 using UnityEngine.Playables;
 
-namespace PathScrubber.Timeline
+namespace SplineScrubber.Timeline
 {
-    public class PathScrubberMixerBehaviour : PlayableBehaviour
+    public class SplineScrubberMixerBehaviour : PlayableBehaviour
     {
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
-            PathingObjBase pathingObj = playerData as PathingObjBase;
+            var cart = playerData as SplineCart;
 
-            if (!pathingObj)
+            if (!cart)
                 return;
 
             int inputCount = playable.GetInputCount ();
@@ -18,8 +17,8 @@ namespace PathScrubber.Timeline
             for (int i = 0; i < inputCount; i++)
             {
                 float inputWeight = playable.GetInputWeight(i);
-                ScriptPlayable<PathScrubberBehaviour> inputPlayable = (ScriptPlayable<PathScrubberBehaviour>)playable.GetInput(i);
-                PathScrubberBehaviour input = inputPlayable.GetBehaviour ();
+                ScriptPlayable<SplineScrubberBehaviour> inputPlayable = (ScriptPlayable<SplineScrubberBehaviour>)playable.GetInput(i);
+                SplineScrubberBehaviour input = inputPlayable.GetBehaviour ();
                 
                 if (inputWeight <= 0f)
                 {
@@ -27,10 +26,10 @@ namespace PathScrubber.Timeline
                 }
 
                 activeInputCount++;
-                pathingObj.Paused = true;
+                cart.Paused = true;
             
                 var path = input.path;
-                pathingObj.SetPath(path);
+                cart.SetPath(path);
 
                 var pos = inputPlayable.GetTime() * input.speed;
                 var length = input.path.Length;
@@ -41,12 +40,12 @@ namespace PathScrubber.Timeline
                 {
                     tCurved = 1 - tCurved;
                 }
-                pathingObj.Set(tCurved, input.speed, input.offset, input.backwards);
+                cart.Set(tCurved, input.speed, input.offset, input.backwards);
             }
 
             if (activeInputCount == 0)
             {
-                pathingObj.Paused = false;
+                cart.Paused = false;
             }
         }
     }

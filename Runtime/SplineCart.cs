@@ -1,25 +1,25 @@
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
-using PathScrubber.Path;
-using Unity.Mathematics;
 
-namespace Spline
+namespace SplineScrubber
 {
-    public class SplineCart : PathingObjBase//MonoBehaviour, IPathMove
+    public class SplineCart : MonoBehaviour
     {
         [SerializeField] private SplineContainer spline;
         [SerializeField] private Transform offsetAnchor;
 
         private SplinePath path;
         
-        public override bool Paused 
+        public bool Paused 
         { 
             get => true;
-            set => spline.enabled = value;
+            set => spline.enabled = value; //?
         }
         
-        public override void Set(float posNormalized, float speed, Vector3 offset, bool backwards = false)
+        public void Set(float posNormalized, float speed, Vector3 offset, bool backwards = false)
         {
+            //TODO extendable
             spline.Evaluate(posNormalized, out float3 worldPos, out float3 tangent, out float3 upVector);
 
             if (backwards)
@@ -31,11 +31,11 @@ namespace Spline
             offsetAnchor.localPosition = offset;
         }
 
-        public override void SetPath(IPath newPath)
+        public void SetPath(SplinePath newPath)
         {
             if (!ReferenceEquals(path, newPath))
             {
-                path = newPath as SplinePath;
+                path = newPath;
                 spline = path.Spline;
             }
         }

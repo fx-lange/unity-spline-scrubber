@@ -1,20 +1,19 @@
 using System;
-using PathScrubber.Path;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
-namespace PathScrubber.Timeline
+namespace SplineScrubber.Timeline
 {
     [Serializable]
-    public class PathScrubberClip : PlayableAsset, ITimelineClipAsset
+    public class SplineScrubberClip : PlayableAsset, ITimelineClipAsset
     {
-        public ExposedReference<PathBase> path;
-        public PathScrubberBehaviour template = new PathScrubberBehaviour();
+        public ExposedReference<SplinePath> path;
+        public SplineScrubberBehaviour template = new SplineScrubberBehaviour();
 
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping;
 
-    [HideInInspector] public float PathLength;
+        [HideInInspector] public float PathLength;
 
         public override double duration
         {
@@ -27,8 +26,8 @@ namespace PathScrubber.Timeline
 
         public override Playable CreatePlayable (PlayableGraph graph, GameObject owner)
         {
-            var playable = ScriptPlayable<PathScrubberBehaviour>.Create (graph, template);
-            PathScrubberBehaviour clone = playable.GetBehaviour ();
+            var playable = ScriptPlayable<SplineScrubberBehaviour>.Create (graph, template);
+            SplineScrubberBehaviour clone = playable.GetBehaviour ();
             clone.path = path.Resolve (graph.GetResolver ());
             return playable;
         }
