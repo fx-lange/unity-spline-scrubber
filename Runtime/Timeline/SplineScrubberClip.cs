@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Serialization;
 using UnityEngine.Timeline;
 
 namespace SplineScrubber.Timeline
@@ -8,8 +9,8 @@ namespace SplineScrubber.Timeline
     [Serializable]
     public class SplineScrubberClip : PlayableAsset, ITimelineClipAsset
     {
-        public ExposedReference<SplinePath> path;
-        public SplineScrubberBehaviour template = new SplineScrubberBehaviour();
+        [FormerlySerializedAs("Path")] public ExposedReference<SplinePathContainer> path;
+        [FormerlySerializedAs("Template")] public SplineScrubberBehaviour template = new SplineScrubberBehaviour();
 
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping;
 

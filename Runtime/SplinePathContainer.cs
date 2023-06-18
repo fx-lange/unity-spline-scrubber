@@ -4,8 +4,9 @@ using UnityEngine.Splines;
 
 namespace SplineScrubber
 {
+    //TODO could handle pathcontainer/native spline management
     [ExecuteAlways]
-    public class SplinePath : MonoBehaviour
+    public class SplinePathContainer : MonoBehaviour
     {
         [SerializeField] private SplineContainer spline;
 

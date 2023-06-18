@@ -12,7 +12,6 @@ namespace SplineScrubber.Timeline
                 return;
 
             int inputCount = playable.GetInputCount ();
-            int activeInputCount = 0;
 
             for (int i = 0; i < inputCount; i++)
             {
@@ -25,27 +24,18 @@ namespace SplineScrubber.Timeline
                     continue;
                 }
 
-                activeInputCount++;
-                cart.Paused = true;
-            
                 var path = input.path;
-                cart.SetPath(path);
+                cart.SetContainer(path.Spline); //TODO cache but how to blend?
 
                 var pos = inputPlayable.GetTime() * input.speed;
                 var length = input.path.Length;
                 pos %= length; //looping
                 var tClip =  pos / input.path.Length;
-                var tCurved = input.curve.Evaluate((float)tClip);
                 if (input.backwards)
                 {
-                    tCurved = 1 - tCurved;
+                    tClip = 1 - tClip;
                 }
-                cart.Set(tCurved, input.speed, input.offset, input.backwards);
-            }
-
-            if (activeInputCount == 0)
-            {
-                cart.Paused = false;
+                cart.Set((float)tClip, input.speed, input.offset, input.backwards);
             }
         }
     }
