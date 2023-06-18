@@ -1,6 +1,6 @@
 {
     "name": "SplineScrubber.Editor",
-    "rootNamespace": "SplineScrubber.Timeline.Editor",
+    "rootNamespace": "SplineScrubber.Editor",
     "references": [
         "GUID:bac96045e059c4c0c9d718ae60938f75",
         "GUID:02f771204943f4a40949438e873e3eff",

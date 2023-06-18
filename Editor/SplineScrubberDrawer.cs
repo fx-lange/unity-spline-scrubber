@@ -1,7 +1,8 @@
+using SplineScrubber.Timeline;
 using UnityEditor;
 using UnityEngine;
 
-namespace SplineScrubber.Timeline.Editor
+namespace SplineScrubber.Editor
 {
     [CustomPropertyDrawer(typeof(SplineScrubberBehaviour))]
     public class SplineScrubberDrawer : PropertyDrawer

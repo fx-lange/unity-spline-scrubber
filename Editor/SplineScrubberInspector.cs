@@ -1,7 +1,8 @@
+using SplineScrubber.Timeline;
 using UnityEditor;
 using UnityEditor.Timeline;
 
-namespace SplineScrubber.Timeline.Editor
+namespace SplineScrubber.Editor
 {
     [CustomEditor(typeof(SplineScrubberClip))]
     public class SplineScrubberInspector : UnityEditor.Editor
