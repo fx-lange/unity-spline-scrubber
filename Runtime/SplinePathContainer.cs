@@ -16,12 +16,9 @@ namespace SplineScrubber
         [HideInInspector]
         public float length;
 
-        private WaitForEndOfFrame _waitForEndOfFrame;
-        private Coroutine _coroutine;
         
         private void OnEnable()
         {
-            _waitForEndOfFrame = new WaitForEndOfFrame();
 
             if (spline == null)
             {
