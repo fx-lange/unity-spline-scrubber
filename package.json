@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "com.unity.timeline": "1.6.3",
-    "com.unity.splines": "2.2.1"
+    "com.unity.splines": "2.2.1",
+    "com.unity.collections": "2.1.4"
   },
   "keywords": [
     "spline",
