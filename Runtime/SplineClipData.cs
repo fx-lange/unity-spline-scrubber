@@ -1,3 +1,4 @@
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Splines;
 
@@ -7,8 +8,7 @@ namespace SplineScrubber
      * edit vs playmode
      * cache on start or serializing
      */
-    [ExecuteAlways]
-    [RequireComponent(typeof(ISplineJobHandler))]
+    // [ExecuteAlways]
     public class SplineClipData : MonoBehaviour
     {
         [SerializeField] private SplineContainer _container;
@@ -69,7 +69,7 @@ namespace SplineScrubber
         {
             _length = _container.CalculateLength();
             _path = new SplinePath<Spline>(_container.Splines);
-            _nativeSpline = new NativeSpline(_path, _container.transform.localToWorldMatrix);
+            _nativeSpline = new NativeSpline(_path, _container.transform.localToWorldMatrix, Allocator.Persistent);
         }
 
         private void Dispose()
