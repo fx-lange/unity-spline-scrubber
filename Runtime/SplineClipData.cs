@@ -8,7 +8,7 @@ namespace SplineScrubber
      * edit vs playmode
      * cache on start or serializing
      */
-    // [ExecuteAlways]
+    [ExecuteAlways]
     public class SplineClipData : MonoBehaviour
     {
         [SerializeField] private SplineContainer _container;
@@ -59,11 +59,6 @@ namespace SplineScrubber
             
             CacheData();
         }
-
-        // private void OnSplineChanged(Spline spline, int _, SplineModification __)
-        // {
-        //     throw new NotImplementedException();
-        // }
 
         private void CacheData()
         {
