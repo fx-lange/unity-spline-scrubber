@@ -28,7 +28,6 @@ namespace SplineScrubber
         private JobHandle _updateTransformHandle;
 
         private NativeArray<JobHandle> _evaluateHandles;
-        private NativeArray<JobHandle> _collectHandles;
         private NativeArray<float3> _pos;
         private NativeArray<float3> _tan;
         private NativeArray<float3> _up;
@@ -81,8 +80,8 @@ namespace SplineScrubber
             MoveMarker.Begin();
             //collect results instead of running multiple transform jobs
             //for later blending support
-            PrepareMove(); 
-            RunMove();
+            var prepareHandle = PrepareMove(); 
+            RunMove(prepareHandle);
             MoveMarker.End();
 
             void RunEvaluate()
@@ -90,7 +89,6 @@ namespace SplineScrubber
                 //run all evaluate jobs
                 var jobCount = _mapping.Count;
                 _evaluateHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
-                _collectHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
 
                 var transforms = new Transform[_targetCount];
 
@@ -112,7 +110,7 @@ namespace SplineScrubber
                 // _transformsAccess.SetTransforms(transforms);
             }
             
-            void PrepareMove()
+            JobHandle PrepareMove()
             {
                 int count = _targetCount;
                 _pos = new NativeArray<float3>(count, Allocator.TempJob);
@@ -121,6 +119,7 @@ namespace SplineScrubber
 
                 int startIdx = 0;
                 int index = 0;
+                JobHandle sequenceHandle = JobHandle.CombineDependencies(_evaluateHandles);
                 foreach (var pair in _mapping)
                 {
                     var jobData = pair.Value;
@@ -140,16 +139,17 @@ namespace SplineScrubber
                         Tan = _tan,
                         Up = _up
                     };
-                    _collectHandles[index] = collectJob.Schedule(_evaluateHandles[index]);
+                    sequenceHandle = collectJob.Schedule(sequenceHandle);
 
                     startIdx += length;
                     index++;
                 }
+
+                return sequenceHandle;
             }
 
-            void RunMove()
+            void RunMove(JobHandle dependency)
             {
-                var combined = JobHandle.CombineDependencies(_collectHandles);
                 UpdateTransforms transformJob = new()
                 {
                     Pos = _pos,
@@ -157,7 +157,7 @@ namespace SplineScrubber
                     Up = _up
                 };
 
-                _updateTransformHandle = transformJob.Schedule(_transformsAccess, combined);
+                _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
             }
         }
 
@@ -175,7 +175,6 @@ namespace SplineScrubber
             }
 
             _evaluateHandles.Dispose();
-            _collectHandles.Dispose();
             _transformsAccess.Dispose();
             _pos.Dispose();
             _tan.Dispose();
