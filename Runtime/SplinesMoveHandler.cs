@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -23,7 +22,7 @@ namespace SplineScrubber
             public readonly SplineEvaluateHandler Handler = new();
         }
 
-        private Dictionary<SplineClipData, JobData> _mapping = new();
+        private readonly Dictionary<SplineClipData, JobData> _mapping = new();
         private int _targetCount = 0;
         private TransformAccessArray _transformsAccess;
         private JobHandle _updateTransformHandle;
@@ -43,6 +42,11 @@ namespace SplineScrubber
             //TODO unlink
         }
 
+        private void Awake()
+        {
+            // _transformsAccess = new TransformAccessArray(1000); //todo magic number
+        }
+
         private void LateUpdate()
         {
             RunLate();
@@ -51,7 +55,7 @@ namespace SplineScrubber
 
         public void UpdatePos(Transform target, float tPos, SplineClipData spline)
         {
-            ScheduleMarker.Begin();
+            // ScheduleMarker.Begin();
             
             if (!_mapping.TryGetValue(spline, out var jobData)) 
             {
@@ -64,13 +68,13 @@ namespace SplineScrubber
             jobData.Handler.ScheduleEvaluate(target, tPos);
             _targetCount++;
             
-            ScheduleMarker.End();
+            // ScheduleMarker.End();
         }
 
         public void Run()
         {
             EvaluateMarker.Begin();
-            //run all jobs
+            //run all evaluate jobs
             var jobCount = _mapping.Count;
             _handles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
             var transforms = new Transform[_targetCount];
@@ -91,11 +95,13 @@ namespace SplineScrubber
 
             //TODO combine must be a job or we have to wait for complete here
             var combined = JobHandle.CombineDependencies(_handles);
+            _transformsAccess = new TransformAccessArray(transforms);
+            // _transformsAccess.SetTransforms(transforms);
             combined.Complete();
             EvaluateMarker.End();
+            
             MoveMarker.Begin();
             int count = _targetCount;
-            _transformsAccess = new TransformAccessArray(transforms);
             _pos = new NativeArray<float3>(count, Allocator.TempJob);
             _tan = new NativeArray<float3>(count, Allocator.TempJob);
             _up = new NativeArray<float3>(count, Allocator.TempJob);
@@ -140,10 +146,15 @@ namespace SplineScrubber
                 jobData.Handler.ClearAndDispose();
             }
             _handles.Dispose();
-            _transformsAccess.Dispose(); //TODO reuse instead of dispose
+            _transformsAccess.Dispose();
             _pos.Dispose();
             _tan.Dispose();
             _up.Dispose();
+        }
+
+        private void OnDestroy()
+        {
+            // _transformsAccess.Dispose();
         }
     }
 }

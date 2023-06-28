@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Splines;
 
@@ -9,6 +10,10 @@ namespace SplineScrubber
 {
     public class SplineEvaluateHandler
     {
+        static readonly ProfilerMarker ScheduleMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Schedule"); 
+        static readonly ProfilerMarker PrepareMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Prepare");
+        static readonly ProfilerMarker EvaluateMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Run");
+
         public readonly List<Transform> Transforms = new(1000);
 
         public NativeArray<float3> Pos;
@@ -24,22 +29,28 @@ namespace SplineScrubber
         
         public void Prepare()
         {
-            var count = Transforms.Count;
-            // _times = new NativeArray<float>(count, Allocator.TempJob);
-            Pos = new NativeArray<float3>(count, Allocator.TempJob);
-            Tan = new NativeArray<float3>(count, Allocator.TempJob);
-            Up = new NativeArray<float3>(count, Allocator.TempJob);
-            // _times.CopyFrom(_timesList.ToArray());
+            // using (PrepareMarker.Auto())
+            {
+                var count = Transforms.Count;
+                Pos = new NativeArray<float3>(count, Allocator.TempJob);
+                Tan = new NativeArray<float3>(count, Allocator.TempJob);
+                Up = new NativeArray<float3>(count, Allocator.TempJob);
+            }
         }
 
         public void ScheduleEvaluate(Transform target, float tPos)
         {
-            _times.Add(tPos);
-            Transforms.Add(target);
+            // using (ScheduleMarker.Auto())
+            {
+                _times.Add(tPos);
+                Transforms.Add(target);
+            }
         }
 
         public JobHandle Run(NativeSpline spline, int batchCount = 2)
         {
+            // EvaluateMarker.Begin();
+            
             SplineEvaluate evaluateJob = new()
             {
                 Spline = spline,
@@ -48,7 +59,11 @@ namespace SplineScrubber
                 Tan = Tan,
                 Up = Up
             };
-            return evaluateJob.Schedule(_times.Length, batchCount);
+            var jobHandle = evaluateJob.Schedule(_times.Length, batchCount);
+            
+            // EvaluateMarker.End();
+            
+            return jobHandle;
         }
         
         public void ClearAndDispose()
