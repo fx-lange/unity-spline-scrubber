@@ -56,4 +56,30 @@ namespace SplineScrubber
             transform.SetPositionAndRotation(Pos[index], rotation);
         }
     }
+
+    [BurstCompile]
+    public struct CollectResultsJob : IJob
+    {
+        [ReadOnly] public NativeArray<float3> PosIn;
+        [ReadOnly] public NativeArray<float3> TanIn;
+        [ReadOnly] public NativeArray<float3> UpIn;
+
+        [ReadOnly] public int StartIdx;
+        [ReadOnly] public int Length;
+        
+        [WriteOnly] public NativeArray<float3> Pos;
+        [WriteOnly] public NativeArray<float3> Tan;
+        [WriteOnly] public NativeArray<float3> Up;
+
+        public void Execute()
+        {
+            NativeArray<float3> posSub = Pos.GetSubArray(StartIdx, Length);
+            NativeArray<float3> tanSub = Tan.GetSubArray(StartIdx, Length);
+            NativeArray<float3> upSub = Up.GetSubArray(StartIdx, Length);
+            
+            PosIn.CopyTo(posSub);
+            TanIn.CopyTo(tanSub);
+            UpIn.CopyTo(upSub);
+        }
+    }
 }
