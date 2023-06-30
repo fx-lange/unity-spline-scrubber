@@ -12,6 +12,8 @@ namespace SplineScrubber
 {
     public class SplinesMoveHandler : MonoBehaviour, ISplineJobHandler
     {
+        [SerializeField] private int _capacity = 1000;
+
         static readonly ProfilerMarker ScheduleMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Schedule");
         static readonly ProfilerMarker EvaluateMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Evaluate");
         static readonly ProfilerMarker MoveMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Move");
@@ -32,6 +34,8 @@ namespace SplineScrubber
         private NativeArray<float3> _tan;
         private NativeArray<float3> _up;
 
+        private ArrayListAccess<Transform> _transforms;
+
         private void OnEnable()
         {
             //TODO link (private run) into post director
@@ -44,7 +48,8 @@ namespace SplineScrubber
 
         private void Awake()
         {
-            // _transformsAccess = new TransformAccessArray(1000); //todo magic number
+            _transforms = new ArrayListAccess<Transform>(_capacity);
+            _transformsAccess = new TransformAccessArray(_capacity);
         }
 
         private void LateUpdate()
@@ -80,7 +85,7 @@ namespace SplineScrubber
             MoveMarker.Begin();
             //collect results instead of running multiple transform jobs
             //for later blending support
-            var prepareHandle = PrepareMove(); 
+            var prepareHandle = PrepareMove();
             RunMove(prepareHandle);
             MoveMarker.End();
 
@@ -90,8 +95,6 @@ namespace SplineScrubber
                 var jobCount = _mapping.Count;
                 _evaluateHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
 
-                var transforms = new Transform[_targetCount];
-
                 int jobIdx = 0;
                 int cpyIndex = 0;
                 foreach (var pair in _mapping)
@@ -99,17 +102,18 @@ namespace SplineScrubber
                     var jobData = pair.Value;
                     jobData.Handler.Prepare();
 
-                    _evaluateHandles[jobIdx] = jobData.Handler.Run(jobData.Spline);
-                    jobData.Handler.Transforms.CopyTo(transforms, cpyIndex);
+                    var count = jobData.Handler.Transforms.Count;
 
-                    cpyIndex += jobData.Handler.Transforms.Count;
+                    _evaluateHandles[jobIdx] = jobData.Handler.Run(jobData.Spline);
+                    jobData.Handler.Transforms.CopyTo(_transforms.Array, cpyIndex);
+
+                    cpyIndex += count;
                     jobIdx++;
                 }
 
-                _transformsAccess = new TransformAccessArray(transforms);
-                // _transformsAccess.SetTransforms(transforms);
+                _transformsAccess.SetTransforms(_transforms.Array);
             }
-            
+
             JobHandle PrepareMove()
             {
                 int count = _targetCount;
@@ -173,9 +177,9 @@ namespace SplineScrubber
             {
                 jobData.Handler.ClearAndDispose();
             }
-
+            
+            _transforms.Clear();
             _evaluateHandles.Dispose();
-            _transformsAccess.Dispose();
             _pos.Dispose();
             _tan.Dispose();
             _up.Dispose();
@@ -183,7 +187,7 @@ namespace SplineScrubber
 
         private void OnDestroy()
         {
-            // _transformsAccess.Dispose();
+            _transformsAccess.Dispose();
         }
     }
 }
