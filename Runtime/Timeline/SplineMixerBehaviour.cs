@@ -9,8 +9,14 @@ namespace SplineScrubber.Timeline
         {
             var cart = playerData as SplineCart;
 
-            // if (!cart)
-            //     return;
+            if (!cart)
+                return;
+            
+            var handler = SplinesMoveHandler.Instance;
+            if (handler == null)
+            {
+                return;
+            }
             
             int inputCount = playable.GetInputCount ();
 
@@ -26,13 +32,12 @@ namespace SplineScrubber.Timeline
                 }
             
                 var splineData = input.SplineData;
-                // cart.SetContainer(path.Spline); //TODO cache but how to blend?
-                //
                 var pos = inputPlayable.GetTime() * input.Speed;
                 var length = splineData.Length;
                 pos %= length; //looping
-                var tClip =  pos / splineData.Length;
-                Debug.Log($"Pos:{pos} T:{tClip} InputWeight:{inputWeight}");
+                var tClip =  pos / length;
+                // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}");
+                handler.UpdatePos(cart.transform,(float)tClip,splineData);
             }
         }
     }

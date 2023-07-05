@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
@@ -5,6 +6,7 @@ using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Jobs;
+using UnityEngine.LowLevel;
 using UnityEngine.Splines;
 using Transform = UnityEngine.Transform;
 
@@ -35,28 +37,49 @@ namespace SplineScrubber
         private NativeArray<float3> _up;
 
         private ArrayListAccess<Transform> _transforms;
+        private PlayerLoopSystem _directorEvaluateLoop;
 
-        private void OnEnable()
-        {
-            //TODO link (private run) into post director
-        }
+        private static SplinesMoveHandler _instance;
+        private static bool _awake;
+        private bool _didRun;
+        private int _runFrame = -1;
+        private bool _attached;
 
-        private void OnDisable()
+        public static SplinesMoveHandler Instance
         {
-            //TODO unlink
+            get
+            {
+                if (!_awake)
+                {
+                    Debug.LogWarning("Not awake yet");
+                    return null;
+                }
+
+                return _instance;
+            }
         }
 
         private void Awake()
         {
+            _instance = this;
+            _awake = true;
             _transforms = new ArrayListAccess<Transform>(_capacity);
             _transformsAccess = new TransformAccessArray(_capacity);
+            // AttachRun(); //A
+        }
+
+        private void Update()
+        {
+            FinishFrame(); //B
         }
 
         private void LateUpdate()
         {
-            RunLate();
-            DisposeAndClear();
+            // FinishFrame(); //A
+            Run(); //B
         }
+
+        
 
         public void UpdatePos(Transform target, float tPos, SplineClipData spline)
         {
@@ -78,6 +101,17 @@ namespace SplineScrubber
 
         public void Run()
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
+            _runFrame = Time.frameCount;
+            if (_targetCount == 0)
+            {
+                return;
+            }
+            
             EvaluateMarker.Begin();
             RunEvaluate();
             EvaluateMarker.End();
@@ -88,6 +122,8 @@ namespace SplineScrubber
             var prepareHandle = PrepareMove();
             RunMove(prepareHandle);
             MoveMarker.End();
+
+            _didRun = true;
 
             void RunEvaluate()
             {
@@ -164,14 +200,23 @@ namespace SplineScrubber
                 _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
             }
         }
-
-        private void RunLate()
+        
+        private void FinishFrame()
         {
+            // Debug.Log($"{Time.frameCount} LateUpdate");
+            if (_didRun == false)
+            {
+                return;
+            }
+
             _updateTransformHandle.Complete();
+            
+            DisposeAndClear();
         }
 
         private void DisposeAndClear()
         {
+            _didRun = false;
             _targetCount = 0;
             foreach (var jobData in _mapping.Values)
             {
@@ -188,6 +233,48 @@ namespace SplineScrubber
         private void OnDestroy()
         {
             _transformsAccess.Dispose();
+            DetachRun();
+        }
+        
+        private void AttachRun()
+        {
+            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+            var preLateUpdateLoop = playerLoop.subSystemList[6];
+            var directorEvaluateLoop = preLateUpdateLoop.subSystemList[4];
+            preLateUpdateLoop.updateDelegate += PreLateUpdateDelegate; //works
+            directorEvaluateLoop.updateDelegate += DirectorEvaluateDelegate; //ignored
+            preLateUpdateLoop.subSystemList[4] = directorEvaluateLoop;
+            playerLoop.subSystemList[6] = preLateUpdateLoop;
+            PlayerLoop.SetPlayerLoop(playerLoop);
+            _attached = true;
+        }
+
+        private void DetachRun()
+        {
+            if (!_attached)
+            {
+                return;
+            }
+
+            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+            var preLateUpdateLoop = playerLoop.subSystemList[6];
+            var directorEvaluateLoop = preLateUpdateLoop.subSystemList[4];
+            preLateUpdateLoop.updateDelegate -= PreLateUpdateDelegate; //works
+            directorEvaluateLoop.updateDelegate -= DirectorEvaluateDelegate; //ignored
+            preLateUpdateLoop.subSystemList[4] = directorEvaluateLoop;
+            playerLoop.subSystemList[6] = preLateUpdateLoop;
+            PlayerLoop.SetPlayerLoop(playerLoop);
+            _attached = false;
+        }
+        
+        private void PreLateUpdateDelegate()
+        {
+            Run();
+        }
+        
+        private void DirectorEvaluateDelegate()
+        {
+            throw new NotImplementedException();
         }
     }
 }
