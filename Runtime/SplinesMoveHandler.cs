@@ -30,6 +30,7 @@ namespace SplineScrubber
         private int _targetCount = 0;
         private TransformAccessArray _transformsAccess;
         private JobHandle _updateTransformHandle;
+        private JobHandle _prepareMoveHandle;
 
         private NativeArray<JobHandle> _evaluateHandles;
         private NativeArray<float3> _pos;
@@ -41,7 +42,6 @@ namespace SplineScrubber
         private static SplinesMoveHandler _instance;
         private static bool _awake;
         private bool _didRun;
-        private int _runFrame = -1;
         private bool _attached;
 
         public static SplinesMoveHandler Instance
@@ -68,13 +68,19 @@ namespace SplineScrubber
 
         private void Update()
         {
+            RunMove(_prepareMoveHandle); //B
             FinishFrame(); //B
         }
 
         private void LateUpdate()
         {
             // FinishFrame(); //A
-            Run(); //B
+            RunEvaluate(); //B
+        }
+
+        private void OnPostRender()
+        {
+            // RunMove(_prepareMoveHandle); //C
         }
 
         public void UpdatePos(Transform target, float tPos, SplineClipData spline)
@@ -95,14 +101,13 @@ namespace SplineScrubber
             }
         }
 
-        public void Run()
+        public void RunEvaluate()
         {
             if (!enabled)
             {
                 return;
             }
             
-            _runFrame = Time.frameCount;
             if (_targetCount == 0)
             {
                 return;
@@ -115,8 +120,7 @@ namespace SplineScrubber
             MoveMarker.Begin();
             //collect results instead of running multiple transform jobs
             //for later blending support
-            var prepareHandle = PrepareMove();
-            RunMove(prepareHandle);
+            PrepareMove();
             MoveMarker.End();
 
             _didRun = true;
@@ -140,46 +144,45 @@ namespace SplineScrubber
                 }
             }
 
-            JobHandle PrepareMove()
+            void PrepareMove()
             {
                 int count = _targetCount;
                 _pos = new NativeArray<float3>(count, Allocator.TempJob);
                 _tan = new NativeArray<float3>(count, Allocator.TempJob);
                 _up = new NativeArray<float3>(count, Allocator.TempJob);
-
-                JobHandle sequenceHandle = JobHandle.CombineDependencies(_evaluateHandles);
+                
+                _prepareMoveHandle = JobHandle.CombineDependencies(_evaluateHandles);
                 foreach (var pair in _mapping)
                 {
                     var handler = pair.Value.Handler;
-
+                    
                     CollectResultsJob collectJob = new()
                     {
                         Indices = handler.Indices,
                         PosIn = handler.Pos,
                         TanIn = handler.Tan,
                         UpIn = handler.Up,
+                        Length = handler.Count,
                         Pos = _pos,
                         Tan = _tan,
                         Up = _up
                     };
-                    sequenceHandle = collectJob.Schedule(handler.Count, 2, sequenceHandle);
+                    _prepareMoveHandle = collectJob.Schedule(_prepareMoveHandle);
 
                 }
-
-                return sequenceHandle;
             }
-
-            void RunMove(JobHandle dependency)
+        }
+        
+        private void RunMove(JobHandle dependency)
+        {
+            UpdateTransforms transformJob = new()
             {
-                UpdateTransforms transformJob = new()
-                {
-                    Pos = _pos,
-                    Tan = _tan,
-                    Up = _up
-                };
+                Pos = _pos,
+                Tan = _tan,
+                Up = _up
+            };
                 
-                _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
-            }
+            _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
         }
         
         private void FinishFrame()
@@ -251,7 +254,7 @@ namespace SplineScrubber
         
         private void PreLateUpdateDelegate()
         {
-            Run();
+            RunEvaluate();
         }
         
         private void DirectorEvaluateDelegate()

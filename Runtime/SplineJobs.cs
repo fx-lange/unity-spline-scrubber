@@ -56,23 +56,28 @@ namespace SplineScrubber
     }
 
     [BurstCompile]
-    public struct CollectResultsJob : IJobParallelFor
+    public struct CollectResultsJob : IJob
     {
         [ReadOnly] public NativeList<int> Indices;
         [ReadOnly] public NativeArray<float3> PosIn;
         [ReadOnly] public NativeArray<float3> TanIn;
         [ReadOnly] public NativeArray<float3> UpIn;
 
+        [ReadOnly] public int Length;
+
         [WriteOnly] public NativeArray<float3> Pos;
         [WriteOnly] public NativeArray<float3> Tan;
         [WriteOnly] public NativeArray<float3> Up;
 
-        public void Execute(int index)
+        public void Execute()
         {
-            int mappedIdx = Indices[index];
-            Pos[mappedIdx] = PosIn[index];
-            Tan[mappedIdx] = TanIn[index];
-            Up[mappedIdx] = UpIn[index];
+            for (int i = 0; i < Length; i++)
+            {
+                int mappedIdx = Indices[i];
+                Pos[mappedIdx] = PosIn[i];
+                Tan[mappedIdx] = TanIn[i];
+                Up[mappedIdx] = UpIn[i];
+            }
         }
     }
 }
