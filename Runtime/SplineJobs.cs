@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 using UnityEngine.Splines;
+using UnityEngine.UIElements;
 
 namespace SplineScrubber
 {
@@ -17,9 +18,6 @@ namespace SplineScrubber
         public void Execute(int index, TransformAccess transform)
         {
             Spline.Evaluate(ElapsedTimes[index], out float3 pos, out float3 tan, out float3 up);
-            // var pos = Spline.EvaluatePosition(ElapsedTime);
-            // var tan = Spline.EvaluateTangent(ElapsedTime);
-            // var up = Vector3.up;
             var rotation = Quaternion.LookRotation(tan, up);
             transform.SetPositionAndRotation(pos, rotation);
         }
@@ -58,28 +56,23 @@ namespace SplineScrubber
     }
 
     [BurstCompile]
-    public struct CollectResultsJob : IJob
+    public struct CollectResultsJob : IJobParallelFor
     {
+        [ReadOnly] public NativeList<int> Indices;
         [ReadOnly] public NativeArray<float3> PosIn;
         [ReadOnly] public NativeArray<float3> TanIn;
         [ReadOnly] public NativeArray<float3> UpIn;
 
-        [ReadOnly] public int StartIdx;
-        [ReadOnly] public int Length;
-        
         [WriteOnly] public NativeArray<float3> Pos;
         [WriteOnly] public NativeArray<float3> Tan;
         [WriteOnly] public NativeArray<float3> Up;
 
-        public void Execute()
+        public void Execute(int index)
         {
-            NativeArray<float3> posSub = Pos.GetSubArray(StartIdx, Length);
-            NativeArray<float3> tanSub = Tan.GetSubArray(StartIdx, Length);
-            NativeArray<float3> upSub = Up.GetSubArray(StartIdx, Length);
-            
-            PosIn.CopyTo(posSub);
-            TanIn.CopyTo(tanSub);
-            UpIn.CopyTo(upSub);
+            int mappedIdx = Indices[index];
+            Pos[mappedIdx] = PosIn[index];
+            Tan[mappedIdx] = TanIn[index];
+            Up[mappedIdx] = UpIn[index];
         }
     }
 }

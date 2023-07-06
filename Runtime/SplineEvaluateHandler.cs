@@ -14,36 +14,37 @@ namespace SplineScrubber
         static readonly ProfilerMarker PrepareMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Prepare");
         static readonly ProfilerMarker EvaluateMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Run");
 
-        public readonly List<Transform> Transforms = new(1000);
-
+        public int Count => Indices.Length;
+        
         public NativeArray<float3> Pos;
         public NativeArray<float3> Tan;
         public NativeArray<float3> Up;
+        public NativeList<int> Indices;
 
         private NativeList<float> _times;
 
         public SplineEvaluateHandler()
         {
-            _times = new NativeList<float>(1000,Allocator.Persistent);
+            Indices = new NativeList<int>(1000, Allocator.Persistent); //Todo magic number
+            _times = new NativeList<float>(1000,Allocator.Persistent); //todo magic number
         }
         
         public void Prepare()
         {
             // using (PrepareMarker.Auto())
             {
-                var count = Transforms.Count;
-                Pos = new NativeArray<float3>(count, Allocator.TempJob);
-                Tan = new NativeArray<float3>(count, Allocator.TempJob);
-                Up = new NativeArray<float3>(count, Allocator.TempJob);
+                Pos = new NativeArray<float3>(Count, Allocator.TempJob);
+                Tan = new NativeArray<float3>(Count, Allocator.TempJob);
+                Up = new NativeArray<float3>(Count, Allocator.TempJob);
             }
         }
 
-        public void ScheduleEvaluate(Transform target, float tPos)
+        public void ScheduleEvaluate(int idx, float tPos)
         {
             // using (ScheduleMarker.Auto())
             {
                 _times.Add(tPos);
-                Transforms.Add(target);
+                Indices.Add(idx);
             }
         }
 
@@ -54,7 +55,7 @@ namespace SplineScrubber
             SplineEvaluate evaluateJob = new()
             {
                 Spline = spline,
-                ElapsedTimes = _times,
+                ElapsedTimes = _times.AsArray(),
                 Pos = Pos,
                 Tan = Tan,
                 Up = Up
@@ -68,7 +69,7 @@ namespace SplineScrubber
         
         public void ClearAndDispose()
         {
-            Transforms.Clear();
+            Indices.Clear();
             _times.Clear();
             Pos.Dispose();
             Tan.Dispose();
@@ -78,6 +79,7 @@ namespace SplineScrubber
         ~SplineEvaluateHandler()
         {
             _times.Dispose();
+            Indices.Dispose();
         }
     }
 }

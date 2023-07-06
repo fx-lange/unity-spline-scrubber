@@ -36,7 +36,6 @@ namespace SplineScrubber
         private NativeArray<float3> _tan;
         private NativeArray<float3> _up;
 
-        private ArrayListAccess<Transform> _transforms;
         private PlayerLoopSystem _directorEvaluateLoop;
 
         private static SplinesMoveHandler _instance;
@@ -63,7 +62,6 @@ namespace SplineScrubber
         {
             _instance = this;
             _awake = true;
-            _transforms = new ArrayListAccess<Transform>(_capacity);
             _transformsAccess = new TransformAccessArray(_capacity);
             // AttachRun(); //A
         }
@@ -79,8 +77,6 @@ namespace SplineScrubber
             Run(); //B
         }
 
-        
-
         public void UpdatePos(Transform target, float tPos, SplineClipData spline)
         {
             // using (ScheduleMarker.Auto())
@@ -94,8 +90,8 @@ namespace SplineScrubber
                     _mapping[spline] = jobData;
                 }
 
-                jobData.Handler.ScheduleEvaluate(target, tPos);
-                _targetCount++;
+                jobData.Handler.ScheduleEvaluate(_targetCount++, tPos);
+                _transformsAccess.Add(target);
             }
         }
 
@@ -132,22 +128,16 @@ namespace SplineScrubber
                 _evaluateHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
 
                 int jobIdx = 0;
-                int cpyIndex = 0;
                 foreach (var pair in _mapping)
                 {
                     var jobData = pair.Value;
                     jobData.Handler.Prepare();
 
-                    var count = jobData.Handler.Transforms.Count;
+                    var count = jobData.Handler.Count;
 
                     _evaluateHandles[jobIdx] = jobData.Handler.Run(jobData.Spline);
-                    jobData.Handler.Transforms.CopyTo(_transforms.Array, cpyIndex);
-
-                    cpyIndex += count;
                     jobIdx++;
                 }
-
-                _transformsAccess.SetTransforms(_transforms.Array);
             }
 
             JobHandle PrepareMove()
@@ -157,32 +147,23 @@ namespace SplineScrubber
                 _tan = new NativeArray<float3>(count, Allocator.TempJob);
                 _up = new NativeArray<float3>(count, Allocator.TempJob);
 
-                int startIdx = 0;
-                int index = 0;
                 JobHandle sequenceHandle = JobHandle.CombineDependencies(_evaluateHandles);
                 foreach (var pair in _mapping)
                 {
-                    var jobData = pair.Value;
-                    var jobPos = jobData.Handler.Pos;
-                    var jobTan = jobData.Handler.Tan;
-                    var jobUp = jobData.Handler.Up;
-                    var length = jobPos.Length;
+                    var handler = pair.Value.Handler;
 
                     CollectResultsJob collectJob = new()
                     {
-                        PosIn = jobPos,
-                        TanIn = jobTan,
-                        UpIn = jobUp,
-                        StartIdx = startIdx,
-                        Length = length,
+                        Indices = handler.Indices,
+                        PosIn = handler.Pos,
+                        TanIn = handler.Tan,
+                        UpIn = handler.Up,
                         Pos = _pos,
                         Tan = _tan,
                         Up = _up
                     };
-                    sequenceHandle = collectJob.Schedule(sequenceHandle);
+                    sequenceHandle = collectJob.Schedule(handler.Count, 2, sequenceHandle);
 
-                    startIdx += length;
-                    index++;
                 }
 
                 return sequenceHandle;
@@ -196,7 +177,7 @@ namespace SplineScrubber
                     Tan = _tan,
                     Up = _up
                 };
-
+                
                 _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
             }
         }
@@ -210,7 +191,6 @@ namespace SplineScrubber
             }
 
             _updateTransformHandle.Complete();
-            
             DisposeAndClear();
         }
 
@@ -223,7 +203,8 @@ namespace SplineScrubber
                 jobData.Handler.ClearAndDispose();
             }
             
-            _transforms.Clear();
+            _transformsAccess.Dispose();
+            _transformsAccess = new TransformAccessArray(_capacity);
             _evaluateHandles.Dispose();
             _pos.Dispose();
             _tan.Dispose();
@@ -232,6 +213,7 @@ namespace SplineScrubber
 
         private void OnDestroy()
         {
+            FinishFrame();
             _transformsAccess.Dispose();
             DetachRun();
         }
