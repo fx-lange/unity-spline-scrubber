@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
@@ -6,7 +5,6 @@ using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Jobs;
-using UnityEngine.LowLevel;
 using UnityEngine.Splines;
 using Transform = UnityEngine.Transform;
 
@@ -29,26 +27,24 @@ namespace SplineScrubber
         private readonly Dictionary<SplineClipData, JobData> _mapping = new();
         private int _targetCount = 0;
         private TransformAccessArray _transformsAccess;
-        private JobHandle _updateTransformHandle;
-        private JobHandle _prepareMoveHandle;
 
-        private NativeArray<JobHandle> _evaluateHandles;
         private NativeArray<float3> _pos;
         private NativeArray<float3> _tan;
         private NativeArray<float3> _up;
-
-        private PlayerLoopSystem _directorEvaluateLoop;
+        
+        private NativeArray<JobHandle> _evaluateHandles;
+        private JobHandle _prepareMoveHandle;
+        private JobHandle _updateTransformHandle;
 
         private static SplinesMoveHandler _instance;
-        private static bool _awake;
+        private static bool _initialized;
         private bool _didRun;
-        private bool _attached;
 
         public static SplinesMoveHandler Instance
         {
             get
             {
-                if (!_awake)
+                if (!_initialized)
                 {
                     Debug.LogWarning("Not awake yet");
                     return null;
@@ -61,26 +57,24 @@ namespace SplineScrubber
         private void Awake()
         {
             _instance = this;
-            _awake = true;
+            _initialized = true;
             _transformsAccess = new TransformAccessArray(_capacity);
-            // AttachRun(); //A
         }
 
         private void Update()
         {
-            RunMove(_prepareMoveHandle); //B
-            FinishFrame(); //B
+            RunMove(_prepareMoveHandle); //A
+            FinishFrame();
         }
 
         private void LateUpdate()
         {
-            // FinishFrame(); //A
-            RunEvaluate(); //B
+            RunEvaluate(); 
         }
 
         private void OnPostRender()
         {
-            // RunMove(_prepareMoveHandle); //C
+            // RunMove(_prepareMoveHandle); //B
         }
 
         public void UpdatePos(Transform target, float tPos, SplineClipData spline)
@@ -101,7 +95,7 @@ namespace SplineScrubber
             }
         }
 
-        public void RunEvaluate()
+        private void RunEvaluate()
         {
             if (!enabled)
             {
@@ -168,7 +162,6 @@ namespace SplineScrubber
                         Up = _up
                     };
                     _prepareMoveHandle = collectJob.Schedule(_prepareMoveHandle);
-
                 }
             }
         }
@@ -187,12 +180,11 @@ namespace SplineScrubber
         
         private void FinishFrame()
         {
-            // Debug.Log($"{Time.frameCount} LateUpdate");
             if (_didRun == false)
             {
                 return;
             }
-
+            
             _updateTransformHandle.Complete();
             DisposeAndClear();
         }
@@ -214,52 +206,11 @@ namespace SplineScrubber
             _up.Dispose();
         }
 
-        private void OnDestroy()
+        private void OnApplicationQuit()
         {
+            _prepareMoveHandle.Complete();
             FinishFrame();
             _transformsAccess.Dispose();
-            DetachRun();
-        }
-        
-        private void AttachRun()
-        {
-            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            var preLateUpdateLoop = playerLoop.subSystemList[6];
-            var directorEvaluateLoop = preLateUpdateLoop.subSystemList[4];
-            preLateUpdateLoop.updateDelegate += PreLateUpdateDelegate; //works
-            directorEvaluateLoop.updateDelegate += DirectorEvaluateDelegate; //ignored
-            preLateUpdateLoop.subSystemList[4] = directorEvaluateLoop;
-            playerLoop.subSystemList[6] = preLateUpdateLoop;
-            PlayerLoop.SetPlayerLoop(playerLoop);
-            _attached = true;
-        }
-
-        private void DetachRun()
-        {
-            if (!_attached)
-            {
-                return;
-            }
-
-            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            var preLateUpdateLoop = playerLoop.subSystemList[6];
-            var directorEvaluateLoop = preLateUpdateLoop.subSystemList[4];
-            preLateUpdateLoop.updateDelegate -= PreLateUpdateDelegate; //works
-            directorEvaluateLoop.updateDelegate -= DirectorEvaluateDelegate; //ignored
-            preLateUpdateLoop.subSystemList[4] = directorEvaluateLoop;
-            playerLoop.subSystemList[6] = preLateUpdateLoop;
-            PlayerLoop.SetPlayerLoop(playerLoop);
-            _attached = false;
-        }
-        
-        private void PreLateUpdateDelegate()
-        {
-            RunEvaluate();
-        }
-        
-        private void DirectorEvaluateDelegate()
-        {
-            throw new NotImplementedException();
         }
     }
 }
