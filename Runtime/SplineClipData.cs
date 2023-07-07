@@ -1,3 +1,4 @@
+using System;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -12,16 +13,28 @@ namespace SplineScrubber
     public class SplineClipData : MonoBehaviour
     {
         [SerializeField] private SplineContainer _container;
-        [SerializeField] private ISplineJobHandler _handler;
 
-        public ISplineJobHandler JobHandler => _handler;
+        public ISplineEvaluate JobHandler => _handler;
         public float Length => _length;
         public SplinePath<Spline> SplinePath => _path;
-        public NativeSpline NativeSpline => _nativeSpline;
 
+        private ISplineEvaluate _handler;
         private float _length;
         private SplinePath<Spline> _path;
         private NativeSpline _nativeSpline;
+
+        private void Awake()
+        {
+            _handler = GetComponent<ISplineEvaluate>();
+        }
+
+        private void Start()
+        {
+            if (!Application.isPlaying) return;
+            
+            SplinesMoveHandler.Instance.Register(_handler);
+            _handler.Spline = _nativeSpline;
+        }
 
         private void OnEnable()
         {

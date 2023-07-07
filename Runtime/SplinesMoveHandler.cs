@@ -5,26 +5,20 @@ using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Jobs;
-using UnityEngine.Splines;
 using Transform = UnityEngine.Transform;
 
 namespace SplineScrubber
 {
-    public class SplinesMoveHandler : MonoBehaviour, ISplineJobHandler
+    public class SplinesMoveHandler : MonoBehaviour
     {
         [SerializeField] private int _capacity = 1000;
+        [SerializeField] private int _batchCount = 2;
 
-        static readonly ProfilerMarker ScheduleMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Schedule");
         static readonly ProfilerMarker EvaluateMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Evaluate");
         static readonly ProfilerMarker MoveMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Move");
 
-        private class JobData
-        {
-            public NativeSpline Spline;
-            public readonly SplineEvaluateHandler Handler = new();
-        }
+        private readonly List<ISplineEvaluate> _evaluateHandlers = new();
 
-        private readonly Dictionary<SplineClipData, JobData> _mapping = new();
         private int _targetCount = 0;
         private TransformAccessArray _transformsAccess;
 
@@ -76,23 +70,16 @@ namespace SplineScrubber
         {
             // RunMove(_prepareMoveHandle); //B
         }
-
-        public void UpdatePos(Transform target, float tPos, SplineClipData spline)
+        
+        public void Register(ISplineEvaluate handler)
         {
-            // using (ScheduleMarker.Auto())
-            {
-                if (!_mapping.TryGetValue(spline, out var jobData))
-                {
-                    jobData = new JobData()
-                    {
-                        Spline = spline.NativeSpline
-                    };
-                    _mapping[spline] = jobData;
-                }
+            _evaluateHandlers.Add(handler);
+        }
 
-                jobData.Handler.ScheduleEvaluate(_targetCount++, tPos);
-                _transformsAccess.Add(target);
-            }
+        public int Schedule(Transform target)
+        {
+            _transformsAccess.Add(target);
+            return _targetCount++;
         }
 
         private void RunEvaluate()
@@ -122,19 +109,14 @@ namespace SplineScrubber
             void RunEvaluate()
             {
                 //run all evaluate jobs
-                var jobCount = _mapping.Count;
+                var jobCount = _evaluateHandlers.Count;
                 _evaluateHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
 
-                int jobIdx = 0;
-                foreach (var pair in _mapping)
+                for (var idx = 0; idx < _evaluateHandlers.Count; idx++)
                 {
-                    var jobData = pair.Value;
-                    jobData.Handler.Prepare();
-
-                    var count = jobData.Handler.Count;
-
-                    _evaluateHandles[jobIdx] = jobData.Handler.Run(jobData.Spline);
-                    jobIdx++;
+                    var handler = _evaluateHandlers[idx];
+                    handler.Prepare();
+                    _evaluateHandles[idx] = handler.Run(_batchCount);
                 }
             }
 
@@ -146,10 +128,8 @@ namespace SplineScrubber
                 _up = new NativeArray<float3>(count, Allocator.TempJob);
                 
                 _prepareMoveHandle = JobHandle.CombineDependencies(_evaluateHandles);
-                foreach (var pair in _mapping)
+                foreach (var handler in _evaluateHandlers)
                 {
-                    var handler = pair.Value.Handler;
-                    
                     CollectResultsJob collectJob = new()
                     {
                         Indices = handler.Indices,
@@ -193,9 +173,9 @@ namespace SplineScrubber
         {
             _didRun = false;
             _targetCount = 0;
-            foreach (var jobData in _mapping.Values)
+            foreach (var evaluate in _evaluateHandlers)
             {
-                jobData.Handler.ClearAndDispose();
+                evaluate.ClearAndDispose();
             }
             
             _transformsAccess.Dispose();

@@ -11,13 +11,7 @@ namespace SplineScrubber.Timeline
 
             if (!cart)
                 return;
-            
-            var handler = SplinesMoveHandler.Instance;
-            if (handler == null)
-            {
-                return;
-            }
-            
+
             int inputCount = playable.GetInputCount ();
 
             for (int i = 0; i < inputCount; i++)
@@ -37,7 +31,8 @@ namespace SplineScrubber.Timeline
                 pos %= length; //looping
                 var tClip =  pos / length;
                 // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}");
-                handler.UpdatePos(cart.transform,(float)tClip,splineData);
+                if (!Application.isPlaying) return;
+                splineData.JobHandler.HandlePosUpdate(cart.transform,(float)tClip);
             }
         }
     }

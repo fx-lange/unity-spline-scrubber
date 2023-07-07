@@ -1,72 +1,65 @@
-using System.Collections.Generic;
+using System;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Splines;
 
 namespace SplineScrubber
 {
-    public class SplineEvaluateHandler
+    [Serializable]
+    public class SplineEvaluateHandler : MonoBehaviour, ISplineEvaluate
     {
-        static readonly ProfilerMarker ScheduleMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Schedule"); 
-        static readonly ProfilerMarker PrepareMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Prepare");
-        static readonly ProfilerMarker EvaluateMarker = new (ProfilerCategory.Scripts,"SplineEvaluateHandler.Run");
-
+        [SerializeField] private int _capacity = 100;
         public int Count => Indices.Length;
-        
-        public NativeArray<float3> Pos;
-        public NativeArray<float3> Tan;
-        public NativeArray<float3> Up;
-        public NativeList<int> Indices;
+
+        public NativeList<int> Indices { get; private set; }
+        public NativeArray<float3> Pos { get; private set; }
+        public NativeArray<float3> Tan { get; private set; }
+        public NativeArray<float3> Up { get; private set; }
+        public NativeSpline Spline { get; set; }
 
         private NativeList<float> _times;
+        private SplinesMoveHandler _moveHandler;
 
-        public SplineEvaluateHandler()
+        private void Awake()
         {
-            Indices = new NativeList<int>(1000, Allocator.Persistent); //Todo magic number
-            _times = new NativeList<float>(1000,Allocator.Persistent); //todo magic number
+            Indices = new NativeList<int>(_capacity, Allocator.Persistent);
+            _times = new NativeList<float>(_capacity, Allocator.Persistent);
         }
-        
+
+        private void Start()
+        {
+            _moveHandler = SplinesMoveHandler.Instance;
+        }
+
+        public void HandlePosUpdate(Transform target, float tPos)
+        {
+            var idx = _moveHandler.Schedule(target);
+            _times.Add(tPos);
+            Indices.Add(idx);
+        }
+
         public void Prepare()
         {
-            // using (PrepareMarker.Auto())
-            {
-                Pos = new NativeArray<float3>(Count, Allocator.TempJob);
-                Tan = new NativeArray<float3>(Count, Allocator.TempJob);
-                Up = new NativeArray<float3>(Count, Allocator.TempJob);
-            }
+            Pos = new NativeArray<float3>(Count, Allocator.TempJob);
+            Tan = new NativeArray<float3>(Count, Allocator.TempJob);
+            Up = new NativeArray<float3>(Count, Allocator.TempJob);
         }
-
-        public void ScheduleEvaluate(int idx, float tPos)
+        
+        public JobHandle Run(int batchCount = 2)
         {
-            // using (ScheduleMarker.Auto())
-            {
-                _times.Add(tPos);
-                Indices.Add(idx);
-            }
-        }
-
-        public JobHandle Run(NativeSpline spline, int batchCount = 2)
-        {
-            // EvaluateMarker.Begin();
-            
             SplineEvaluate evaluateJob = new()
             {
-                Spline = spline,
+                Spline = Spline,
                 ElapsedTimes = _times.AsArray(),
                 Pos = Pos,
                 Tan = Tan,
                 Up = Up
             };
-            var jobHandle = evaluateJob.Schedule(_times.Length, batchCount);
-            
-            // EvaluateMarker.End();
-            
-            return jobHandle;
+            return evaluateJob.Schedule(_times.Length, batchCount);
         }
-        
+
         public void ClearAndDispose()
         {
             Indices.Clear();

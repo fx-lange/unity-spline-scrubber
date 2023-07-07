@@ -10,7 +10,7 @@ namespace SplineScrubber.Timeline
         [SerializeField] private SplineClipData _splineData;
         [SerializeField] [Min(0.0001f)]private float _speed = 1;
         
-        public ISplineJobHandler JobHandler => _splineData.JobHandler;
+        public ISplineEvaluate JobHandler => _splineData.JobHandler;
         public SplineClipData SplineData { get; set; }
         public float Speed => _speed;
         
