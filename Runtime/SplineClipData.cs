@@ -1,4 +1,3 @@
-using System;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -14,37 +13,26 @@ namespace SplineScrubber
     {
         [SerializeField] private SplineContainer _container;
 
-        public ISplineEvaluate JobHandler => _handler;
+        public SplineEvaluateHandler JobHandler => _handler;
         public float Length => _length;
         public SplinePath<Spline> SplinePath => _path;
 
-        private ISplineEvaluate _handler;
+        private SplineEvaluateHandler _handler;
         private float _length;
         private SplinePath<Spline> _path;
         private NativeSpline _nativeSpline;
-
-        private void Awake()
-        {
-            _handler = GetComponent<ISplineEvaluate>();
-        }
-
-        private void Start()
-        {
-            if (!Application.isPlaying) return;
-            
-            SplinesMoveHandler.Instance.Register(_handler);
-            _handler.Spline = _nativeSpline;
-        }
 
         private void OnEnable()
         {
             if (_container == null)
             {
-                Debug.LogError("Missing SplineContainer");
+                Debug.LogError("Missing SplineContainer!");
                 enabled = false;
                 return;
             }
             
+            _handler = new SplineEvaluateHandler();
+
             Spline.Changed += OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified += OnSplineModified;
             CacheData();
@@ -54,8 +42,12 @@ namespace SplineScrubber
         {
             Spline.Changed -= OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified -= OnSplineModified;
-            
             Dispose();
+            var moveInstance = SplinesMoveHandler.Instance;
+            if (moveInstance != null)
+            {
+                moveInstance.Unregister(_handler);
+            }
         }
         
         private void OnSplineChanged(Spline spline, int _, SplineModification __)
@@ -78,6 +70,7 @@ namespace SplineScrubber
             _length = _container.CalculateLength();
             _path = new SplinePath<Spline>(_container.Splines);
             _nativeSpline = new NativeSpline(_path, _container.transform.localToWorldMatrix, Allocator.Persistent);
+            _handler.Spline = _nativeSpline;
         }
 
         private void Dispose()

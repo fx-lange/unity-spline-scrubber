@@ -1,4 +1,3 @@
-using System;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -7,10 +6,8 @@ using UnityEngine.Splines;
 
 namespace SplineScrubber
 {
-    [Serializable]
-    public class SplineEvaluateHandler : MonoBehaviour, ISplineEvaluate
+    public class SplineEvaluateHandler
     {
-        [SerializeField] private int _capacity = 100;
         public int Count => Indices.Length;
 
         public NativeList<int> Indices { get; private set; }
@@ -21,16 +18,15 @@ namespace SplineScrubber
 
         private NativeList<float> _times;
         private SplinesMoveHandler _moveHandler;
+        
 
-        private void Awake()
-        {
-            Indices = new NativeList<int>(_capacity, Allocator.Persistent);
-            _times = new NativeList<float>(_capacity, Allocator.Persistent);
-        }
-
-        private void Start()
+        public SplineEvaluateHandler()
         {
             _moveHandler = SplinesMoveHandler.Instance;
+            _moveHandler.Register(this);
+            
+            Indices = new NativeList<int>(_moveHandler.Capacity, Allocator.Persistent);
+            _times = new NativeList<float>(_moveHandler.Capacity, Allocator.Persistent);
         }
 
         public void HandlePosUpdate(Transform target, float tPos)

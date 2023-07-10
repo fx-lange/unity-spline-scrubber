@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEngine.Playables;
 
 namespace SplineScrubber.Timeline
@@ -30,8 +29,7 @@ namespace SplineScrubber.Timeline
                 var length = splineData.Length;
                 pos %= length; //looping
                 var tClip =  pos / length;
-                // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}");
-                if (!Application.isPlaying) return;
+                // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}"); 
                 splineData.JobHandler.HandlePosUpdate(cart.transform,(float)tClip);
             }
         }

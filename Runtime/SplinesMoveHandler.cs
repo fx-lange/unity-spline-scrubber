@@ -9,6 +9,7 @@ using Transform = UnityEngine.Transform;
 
 namespace SplineScrubber
 {
+    [ExecuteAlways]
     public class SplinesMoveHandler : MonoBehaviour
     {
         [SerializeField] private int _capacity = 1000;
@@ -17,7 +18,7 @@ namespace SplineScrubber
         static readonly ProfilerMarker EvaluateMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Evaluate");
         static readonly ProfilerMarker MoveMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Move");
 
-        private readonly List<ISplineEvaluate> _evaluateHandlers = new();
+        private readonly List<SplineEvaluateHandler> _evaluateHandlers = new();
 
         private int _targetCount = 0;
         private TransformAccessArray _transformsAccess;
@@ -34,29 +35,30 @@ namespace SplineScrubber
         private static bool _initialized;
         private bool _didRun;
 
+        public int Capacity => _capacity;
+        
         public static SplinesMoveHandler Instance
         {
             get
             {
                 if (!_initialized)
                 {
-                    Debug.LogWarning("Not awake yet");
-                    return null;
+                    _instance = FindAnyObjectByType<SplinesMoveHandler>();
+                    _initialized = true;
                 }
 
                 return _instance;
             }
         }
 
-        private void Awake()
+        private void OnEnable() //
         {
-            _instance = this;
-            _initialized = true;
             _transformsAccess = new TransformAccessArray(_capacity);
         }
 
         private void Update()
         {
+            
             RunMove(_prepareMoveHandle); //A
             FinishFrame();
         }
@@ -66,14 +68,19 @@ namespace SplineScrubber
             RunEvaluate(); 
         }
 
-        private void OnPostRender()
-        {
+        // private void OnPostRender()
+        // {
             // RunMove(_prepareMoveHandle); //B
-        }
+        // }
         
-        public void Register(ISplineEvaluate handler)
+        public void Register(SplineEvaluateHandler handler)
         {
             _evaluateHandlers.Add(handler);
+        }
+
+        public void Unregister(SplineEvaluateHandler handler)
+        {
+            _evaluateHandlers.Remove(handler);
         }
 
         public int Schedule(Transform target)
@@ -84,18 +91,13 @@ namespace SplineScrubber
 
         private void RunEvaluate()
         {
-            if (!enabled)
-            {
-                return;
-            }
-            
             if (_targetCount == 0)
             {
                 return;
             }
             
             EvaluateMarker.Begin();
-            RunEvaluate();
+            Run();
             EvaluateMarker.End();
 
             MoveMarker.Begin();
@@ -106,7 +108,7 @@ namespace SplineScrubber
 
             _didRun = true;
 
-            void RunEvaluate()
+            void Run()
             {
                 //run all evaluate jobs
                 var jobCount = _evaluateHandlers.Count;
@@ -148,6 +150,8 @@ namespace SplineScrubber
         
         private void RunMove(JobHandle dependency)
         {
+            if (!_didRun) return;
+                
             UpdateTransforms transformJob = new()
             {
                 Pos = _pos,
@@ -160,10 +164,7 @@ namespace SplineScrubber
         
         private void FinishFrame()
         {
-            if (_didRun == false)
-            {
-                return;
-            }
+            if (!_didRun) return;
             
             _updateTransformHandle.Complete();
             DisposeAndClear();
@@ -185,12 +186,13 @@ namespace SplineScrubber
             _tan.Dispose();
             _up.Dispose();
         }
-
-        private void OnApplicationQuit()
+        
+        private void OnDisable()
         {
             _prepareMoveHandle.Complete();
             FinishFrame();
             _transformsAccess.Dispose();
+            _initialized = false;
         }
     }
 }
