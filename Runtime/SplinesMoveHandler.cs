@@ -30,7 +30,7 @@ namespace SplineScrubber
         private NativeArray<JobHandle> _evaluateHandles;
         private JobHandle _prepareMoveHandle;
         private JobHandle _updateTransformHandle;
-
+ 
         private static SplinesMoveHandler _instance;
         private static bool _initialized;
         private bool _didRun;
@@ -44,7 +44,7 @@ namespace SplineScrubber
                 if (!_initialized)
                 {
                     _instance = FindAnyObjectByType<SplinesMoveHandler>();
-                    _initialized = true;
+                    _initialized = _instance != null;
                 }
 
                 return _instance;
