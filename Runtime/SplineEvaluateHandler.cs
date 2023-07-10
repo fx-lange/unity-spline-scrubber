@@ -17,8 +17,8 @@ namespace SplineScrubber
         public NativeSpline Spline { get; set; }
 
         private NativeList<float> _times;
-        private SplinesMoveHandler _moveHandler;
-        
+        private readonly SplinesMoveHandler _moveHandler;
+        private bool _readyForInput = true;
 
         public SplineEvaluateHandler()
         {
@@ -31,6 +31,10 @@ namespace SplineScrubber
 
         public void HandlePosUpdate(Transform target, float tPos)
         {
+            if (!_readyForInput)
+            {
+                return; //can happen during drag clip
+            }
             var idx = _moveHandler.Schedule(target);
             _times.Add(tPos);
             Indices.Add(idx);
@@ -38,6 +42,7 @@ namespace SplineScrubber
 
         public void Prepare()
         {
+            _readyForInput = false;
             Pos = new NativeArray<float3>(Count, Allocator.TempJob);
             Tan = new NativeArray<float3>(Count, Allocator.TempJob);
             Up = new NativeArray<float3>(Count, Allocator.TempJob);
@@ -63,6 +68,8 @@ namespace SplineScrubber
             Pos.Dispose();
             Tan.Dispose();
             Up.Dispose();
+
+            _readyForInput = true;
         }
 
         ~SplineEvaluateHandler()

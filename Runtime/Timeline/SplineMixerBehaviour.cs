@@ -25,6 +25,11 @@ namespace SplineScrubber.Timeline
                 }
             
                 var splineData = input.SplineData;
+                if (splineData == null)
+                {
+                    return;
+                }
+                
                 var pos = inputPlayable.GetTime() * input.Speed;
                 var length = splineData.Length;
                 pos %= length; //looping
