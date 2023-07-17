@@ -69,6 +69,8 @@ namespace SplineScrubber
         {
             _length = _container.CalculateLength();
             _path = new SplinePath<Spline>(_container.Splines);
+            
+            _nativeSpline.Dispose();
             _nativeSpline = new NativeSpline(_path, _container.transform.localToWorldMatrix, Allocator.Persistent);
             _handler.Spline = _nativeSpline;
         }
