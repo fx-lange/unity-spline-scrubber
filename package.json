@@ -1,23 +1,18 @@
 {
   "name": "com.fxlange.spline-scrubber",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "displayName": "Spline Scrubber",
-  "description": "Timeline integration for splines",
-  "unity": "2022.2",
+  "description": "Efficient timeline integration for splines using c# job system",
+  "unity": "2022.3",
   "author": {
     "name": "Felix Lange",
     "email": "mail@felixlange.dev",
     "url": "felixlange.dev"
   },
   "dependencies": {
-    "com.unity.timeline": "1.6.3",
+    "com.unity.timeline": "1.7.5",
     "com.unity.splines": "2.2.1",
     "com.unity.collections": "2.1.4"
   },
-  "keywords": [
-    "spline",
-    "timeline driven",
-    "follow"
-  ],
   "licensesUrl": "https://github.com/fx-lange/unity-spline-scrubber/blob/main/LICENSE"
 }
