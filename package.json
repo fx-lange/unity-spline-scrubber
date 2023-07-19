@@ -1,6 +1,6 @@
 {
   "name": "com.fxlange.spline-scrubber",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "displayName": "Spline Scrubber",
   "description": "Efficient timeline integration for splines using c# job system",
   "unity": "2022.3",

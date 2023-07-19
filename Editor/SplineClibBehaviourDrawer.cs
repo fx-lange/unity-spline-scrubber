@@ -16,8 +16,7 @@ namespace SplineScrubber.Editor
         public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
         {
             SerializedProperty speedProp = property.FindPropertyRelative("_speed");
-        
-
+            
             Rect singleFieldRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
             EditorGUI.PropertyField(singleFieldRect, speedProp);
         }

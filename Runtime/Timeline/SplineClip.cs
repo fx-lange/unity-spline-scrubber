@@ -13,9 +13,9 @@ namespace SplineScrubber.Timeline
 
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping; //TODO blend
 
-    public float PathLength { get; set; }
+        public float PathLength { get; set; }
         public ExposedReference<SplineClipData> SplineData => _splineData;
-        public override double duration => Mathf.Max(PathLength / _behaviour.Speed, 1f);
+        public override double duration => PathLength / _behaviour.Speed;
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
