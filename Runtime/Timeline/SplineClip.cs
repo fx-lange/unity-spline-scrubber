@@ -6,22 +6,30 @@ using UnityEngine.Timeline;
 namespace SplineScrubber.Timeline
 {
     [Serializable]
-    public class SplineClip : PlayableAsset, ITimelineClipAsset
+    public abstract class SplineClip : PlayableAsset
     {
         [SerializeField] private ExposedReference<SplineClipData> _splineData;
         [SerializeField] private SplineClipBehaviour _behaviour = new();
 
-        public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping | ClipCaps.Blending;
+        public override double duration => GetDuration(Clip);
 
-        public bool InitialClipDurationSet { get; set; }
         public float PathLength { get; set; }
-        public ExposedReference<SplineClipData> SplineData => _splineData;
-        public override double duration
+        public bool InitialClipDurationSet { get; set; }
+        public TimelineClip Clip { get; set; }
+        
+        private float GetDuration(TimelineClip clip)
         {
-            get
-            {
-                return PathLength / _behaviour.Speed;
-            }
+            if (clip == null) return PathLength / _behaviour.Speed;
+            
+            var mixDuration = clip.mixInDuration + clip.mixOutDuration;
+            if (mixDuration <= 0) return PathLength / _behaviour.Speed;
+            
+            //TODO simplified to be linear
+            float mixInDistance = (float)clip.mixInDuration * _behaviour.Speed / 2f;
+            float mixOutDistance = (float)clip.mixOutDuration * _behaviour.Speed / 2f;
+            
+            float centerDistance = PathLength - mixInDistance - mixOutDistance;
+            return (float)mixDuration + (centerDistance / _behaviour.Speed);
         }
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)

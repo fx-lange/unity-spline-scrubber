@@ -10,8 +10,9 @@ namespace SplineScrubber.Editor
     {
         public override void OnCreate(TimelineClip clip, TrackAsset track, TimelineClip clonedFrom)
         {
-            base.OnCreate(clip, track, clonedFrom);
             var asset = clip.asset as SplineClip;
+            base.OnCreate(clip, track, clonedFrom);
+            asset.Clip = clip;
             asset.InitialClipDurationSet = clonedFrom != null;
         }
 
