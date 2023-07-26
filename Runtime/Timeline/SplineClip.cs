@@ -10,13 +10,19 @@ namespace SplineScrubber.Timeline
     {
         [SerializeField] private ExposedReference<SplineClipData> _splineData;
         [SerializeField] private SplineClipBehaviour _behaviour = new();
+        [HideInInspector][SerializeField] private TimelineClip _clip;
 
         public override double duration => GetDuration(Clip);
 
         public float PathLength { get; set; }
         public bool InitialClipDurationSet { get; set; }
-        public TimelineClip Clip { get; set; }
-        
+
+        public TimelineClip Clip
+        {
+            private get { return _clip; }
+            set { _clip = value; }
+        }
+
         private float GetDuration(TimelineClip clip)
         {
             if (clip == null) return PathLength / _behaviour.Speed;
@@ -42,6 +48,8 @@ namespace SplineScrubber.Timeline
                 PathLength = splineClipData.Length;
                 clone.SplineData = splineClipData;
             }
+
+            clone.Clip = Clip;
             return playable;
         }
     }
