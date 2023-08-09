@@ -10,38 +10,52 @@ namespace SplineScrubber.Timeline
     public class SplineClipBehaviour : PlayableBehaviour
     {
         [SerializeField] private SplineClipData _splineData;
-        [SerializeField] [NotKeyable] [Min(0.0001f)]
+
+        [NotKeyable] [Min(0.0001f)] [SerializeField]
         private float _speed = 1;
 
-        public SplineEvaluateHandler JobHandler => _splineData.JobHandler;
+        [NotKeyable] [Min(0)] [SerializeField] private float _accTime;
+        [NotKeyable] [Min(0)] [SerializeField] private float _decTime;
+
         public SplineClipData SplineData { get; set; }
-        public TimelineClip Clip { private get; set; }
+        public float Duration { private get; set; }
         public float Speed => _speed;
+        public float AccTime => _accTime;
+        public float DecTime => _decTime;
 
         public double EvaluateDistance(double time)
         {
-            var mixInDur = Clip.mixInDuration;
-            var mixOutDur = Clip.mixOutDuration;
-            var mixOutStart = Clip.duration - mixOutDur;
+            if (Duration == 0) return 0;
 
-            double mixInDistance = 0;
-            if (mixInDur > 0)
+            var innerTime = time % Duration;
+            var loops = math.floor(time / Duration);
+            return EvalInnerDistance(innerTime) + loops * SplineData.Length;
+
+            double EvalInnerDistance(double t)
             {
-                var mixInTime = math.min(time, mixInDur);
-                var mixInSpeed = mixInTime * Speed / mixInDur; 
-                mixInDistance = mixInTime * mixInSpeed / 2f;
-            }
+                var mixInDur = AccTime;
+                var mixOutDur = DecTime;
+                var mixOutStart = Duration - mixOutDur;
 
-            double mixOutDistance = 0;
-            if (mixOutDur > 0)
-            {
-                var mixOutTime = mixOutDur - math.clamp(time - mixOutStart, 0, mixOutDur);
-                var mixOutSpeed = mixOutTime * Speed / mixOutDur;
-                mixOutDistance = mixOutDur * Speed/2f - mixOutTime * mixOutSpeed/2f;
-            }
+                double mixInDistance = 0;
+                if (mixInDur > 0)
+                {
+                    var mixInTime = math.min(t, mixInDur);
+                    var mixInSpeed = mixInTime * Speed / mixInDur;
+                    mixInDistance = mixInTime * mixInSpeed / 2f;
+                }
 
-            var centerDistance = math.clamp(time - mixInDur, 0, mixOutStart - mixInDur) * Speed;
-            return mixInDistance + centerDistance + mixOutDistance;
+                double mixOutDistance = 0;
+                if (mixOutDur > 0)
+                {
+                    var mixOutTime = mixOutDur - math.clamp(t - mixOutStart, 0, mixOutDur);
+                    var mixOutSpeed = mixOutTime * Speed / mixOutDur;
+                    mixOutDistance = mixOutDur * Speed / 2f - mixOutTime * mixOutSpeed / 2f;
+                }
+
+                var centerDistance = math.clamp(t - mixInDur, 0, mixOutStart - mixInDur) * Speed;
+                return mixInDistance + centerDistance + mixOutDistance;
+            }
         }
 
         public override void OnPlayableCreate(Playable playable)

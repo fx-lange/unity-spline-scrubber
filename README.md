@@ -17,9 +17,3 @@ By leveraging the performance benefits of the C# job system and burst compiler, 
 Install via Package Manager
 * [Add package via git URL](https://docs.unity3d.com/Manual/upm-ui-giturl.html):
 * `https://github.com/fx-lange/unity-spline-scrubber.git`
-
-## Limitations
-
-* Clip blending not supported yet. `SpeedBlendingClip` can blend together but behaviour is undefined
-* HOLD state behaviour is undefined for `SpeedBlendingClip` 
-* `SpeedBlendingClip` only supports linear mixIn & mixOut curves

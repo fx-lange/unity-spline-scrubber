@@ -12,7 +12,6 @@ namespace SplineScrubber.Editor
         {
             var asset = clip.asset as SplineClip;
             base.OnCreate(clip, track, clonedFrom);
-            asset.Clip = clip;
             asset.InitialClipDurationSet = clonedFrom != null;
         }
 

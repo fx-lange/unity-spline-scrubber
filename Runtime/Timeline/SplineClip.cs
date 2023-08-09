@@ -6,37 +6,18 @@ using UnityEngine.Timeline;
 namespace SplineScrubber.Timeline
 {
     [Serializable]
-    public abstract class SplineClip : PlayableAsset
+    public class SplineClip : PlayableAsset, ITimelineClipAsset
     {
         [SerializeField] private ExposedReference<SplineClipData> _splineData;
         [SerializeField] private SplineClipBehaviour _behaviour = new();
-        [HideInInspector][SerializeField] private TimelineClip _clip;
+        [HideInInspector] [SerializeField] private TimelineClip _clip;
 
-        public override double duration => GetDuration(Clip);
+        public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping | ClipCaps.Extrapolation;
+
+        public override double duration => GetDuration();
 
         public float PathLength { get; set; }
         public bool InitialClipDurationSet { get; set; }
-
-        public TimelineClip Clip
-        {
-            private get { return _clip; }
-            set { _clip = value; }
-        }
-
-        private float GetDuration(TimelineClip clip)
-        {
-            if (clip == null) return PathLength / _behaviour.Speed;
-            
-            var mixDuration = clip.mixInDuration + clip.mixOutDuration;
-            if (mixDuration <= 0) return PathLength / _behaviour.Speed;
-            
-            //TODO simplified to be linear
-            float mixInDistance = (float)clip.mixInDuration * _behaviour.Speed / 2f;
-            float mixOutDistance = (float)clip.mixOutDuration * _behaviour.Speed / 2f;
-            
-            float centerDistance = PathLength - mixInDistance - mixOutDistance;
-            return (float)mixDuration + (centerDistance / _behaviour.Speed);
-        }
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
@@ -49,8 +30,21 @@ namespace SplineScrubber.Timeline
                 clone.SplineData = splineClipData;
             }
 
-            clone.Clip = Clip;
+            clone.Duration = GetDuration();
             return playable;
+        }
+
+        private float GetDuration()
+        {
+            var mixDuration = _behaviour.AccTime + _behaviour.DecTime;
+            if (mixDuration <= 0) return PathLength / _behaviour.Speed;
+
+            //TODO simplified to be linear
+            float mixInDistance = _behaviour.AccTime * _behaviour.Speed / 2f;
+            float mixOutDistance = _behaviour.DecTime * _behaviour.Speed / 2f;
+
+            float centerDistance = PathLength - mixInDistance - mixOutDistance;
+            return mixDuration + (centerDistance / _behaviour.Speed);
         }
     }
 }
