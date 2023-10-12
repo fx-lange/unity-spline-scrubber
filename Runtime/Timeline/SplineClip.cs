@@ -10,8 +10,7 @@ namespace SplineScrubber.Timeline
     {
         [SerializeField] private ExposedReference<SplineClipData> _splineData;
         [SerializeField] private SplineClipBehaviour _behaviour = new();
-        [HideInInspector] [SerializeField] private TimelineClip _clip;
-
+        
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping | ClipCaps.Extrapolation;
 
         public override double duration => GetDuration();
@@ -40,11 +39,17 @@ namespace SplineScrubber.Timeline
             if (mixDuration <= 0) return PathLength / _behaviour.Speed;
 
             //TODO simplified to be linear
-            float mixInDistance = _behaviour.AccTime * _behaviour.Speed / 2f;
-            float mixOutDistance = _behaviour.DecTime * _behaviour.Speed / 2f;
+            var mixInDistance = _behaviour.AccTime * _behaviour.Speed / 2f;
+            var mixOutDistance = _behaviour.DecTime * _behaviour.Speed / 2f;
 
-            float centerDistance = PathLength - mixInDistance - mixOutDistance;
+            var centerDistance = PathLength - mixInDistance - mixOutDistance;
             return mixDuration + (centerDistance / _behaviour.Speed);
+        }
+
+        private void OnValidate()
+        {
+            Debug.Log("OnValidate");
+            _behaviour.UpdateAccDecDistance();
         }
     }
 }

@@ -16,12 +16,24 @@ namespace SplineScrubber.Timeline
 
         [NotKeyable] [Min(0)] [SerializeField] private float _accTime;
         [NotKeyable] [Min(0)] [SerializeField] private float _decTime;
+        [SerializeField] private AnimationCurve _accCurve;
+        [SerializeField] private AnimationCurve _decCurve;
+
+        [SerializeField] private float _accDistance;
+        [SerializeField] private float _decDistance;
 
         public SplineClipData SplineData { get; set; }
         public float Duration { private get; set; }
         public float Speed => _speed;
         public float AccTime => _accTime;
+
         public float DecTime => _decTime;
+
+        public void UpdateAccDecDistance()
+        {
+            _accDistance = AccTime * Speed / 2f;
+            _decDistance = DecTime * Speed / 2f;
+        }
 
         public double EvaluateDistance(double time)
         {
