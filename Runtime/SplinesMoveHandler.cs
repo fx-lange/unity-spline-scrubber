@@ -26,17 +26,17 @@ namespace SplineScrubber
         private NativeArray<float3> _pos;
         private NativeArray<float3> _tan;
         private NativeArray<float3> _up;
-        
+
         private NativeArray<JobHandle> _evaluateHandles;
         private JobHandle _prepareMoveHandle;
         private JobHandle _updateTransformHandle;
- 
+
         private static SplinesMoveHandler _instance;
         private static bool _initialized;
         private bool _didRun;
 
         public int Capacity => _capacity;
-        
+
         public static SplinesMoveHandler Instance
         {
             get
@@ -58,14 +58,13 @@ namespace SplineScrubber
 
         private void Update()
         {
-            
             RunMove(_prepareMoveHandle); //A
             FinishFrame();
         }
 
         private void LateUpdate()
         {
-            RunEvaluate(); 
+            RunEvaluate();
         }
 
         // private void OnPostRender()
@@ -95,7 +94,7 @@ namespace SplineScrubber
             {
                 return;
             }
-            
+
             EvaluateMarker.Begin();
             Run();
             EvaluateMarker.End();
@@ -128,7 +127,7 @@ namespace SplineScrubber
                 _pos = new NativeArray<float3>(count, Allocator.TempJob);
                 _tan = new NativeArray<float3>(count, Allocator.TempJob);
                 _up = new NativeArray<float3>(count, Allocator.TempJob);
-                
+
                 _prepareMoveHandle = JobHandle.CombineDependencies(_evaluateHandles);
                 foreach (var handler in _evaluateHandlers)
                 {
@@ -147,25 +146,25 @@ namespace SplineScrubber
                 }
             }
         }
-        
+
         private void RunMove(JobHandle dependency)
         {
             if (!_didRun) return;
-                
+
             UpdateTransforms transformJob = new()
             {
                 Pos = _pos,
                 Tan = _tan,
                 Up = _up
             };
-                
+
             _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
         }
-        
+
         private void FinishFrame()
         {
             if (!_didRun) return;
-            
+
             _updateTransformHandle.Complete();
             DisposeAndClear();
         }
@@ -178,7 +177,7 @@ namespace SplineScrubber
             {
                 evaluate.ClearAndDispose();
             }
-            
+
             _transformsAccess.Dispose();
             _transformsAccess = new TransformAccessArray(_capacity);
             _evaluateHandles.Dispose();
@@ -186,7 +185,7 @@ namespace SplineScrubber
             _tan.Dispose();
             _up.Dispose();
         }
-        
+
         private void OnDisable()
         {
             _prepareMoveHandle.Complete();

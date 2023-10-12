@@ -14,15 +14,36 @@ namespace SplineScrubber
         [SerializeField] private SplineContainer _container;
 
         public SplineEvaluateHandler JobHandler => _handler;
-        public float Length => _length;
+        public float Length
+        {
+            get {
+                if (!_init)
+                {
+                    Init();
+                } 
+                return _length;
+            }
+        }
+
         public SplinePath<Spline> SplinePath => _path;
 
         private SplineEvaluateHandler _handler;
         private float _length;
         private SplinePath<Spline> _path;
         private NativeSpline _nativeSpline;
+        private bool _init;
 
         private void OnEnable()
+        {
+            if (_init)
+            {
+                return;
+            }
+            
+            Init();
+        }
+
+        private void Init()
         {
             if (_container == null)
             {
@@ -30,12 +51,13 @@ namespace SplineScrubber
                 enabled = false;
                 return;
             }
-            
+
             _handler = new SplineEvaluateHandler();
 
             Spline.Changed += OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified += OnSplineModified;
             CacheData();
+            _init = true;
         }
 
         private void OnDisable()
