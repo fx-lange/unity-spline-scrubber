@@ -20,9 +20,9 @@ namespace SplineScrubber
         private readonly SplinesMoveHandler _moveHandler;
         private bool _readyForInput = true;
 
-        public SplineEvaluateHandler()
+        public SplineEvaluateHandler(SplinesMoveHandler moveHandler)
         {
-            _moveHandler = SplinesMoveHandler.Instance;
+            _moveHandler = moveHandler;
             _moveHandler.Register(this);
             
             Indices = new NativeList<int>(_moveHandler.Capacity, Allocator.Persistent);
@@ -35,6 +35,7 @@ namespace SplineScrubber
             {
                 return; //can happen during drag clip
             }
+            
             var idx = _moveHandler.Schedule(target);
             _times.Add(tPos);
             Indices.Add(idx);

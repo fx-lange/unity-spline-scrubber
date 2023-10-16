@@ -51,7 +51,7 @@ namespace SplineScrubber
             }
         }
 
-        private void OnEnable() //
+        private void OnEnable() 
         {
             _transformsAccess = new TransformAccessArray(_capacity);
         }
@@ -96,7 +96,7 @@ namespace SplineScrubber
             }
 
             EvaluateMarker.Begin();
-            Run();
+            Evaluate();
             EvaluateMarker.End();
 
             MoveMarker.Begin();
@@ -107,7 +107,7 @@ namespace SplineScrubber
 
             _didRun = true;
 
-            void Run()
+            void Evaluate()
             {
                 //run all evaluate jobs
                 var jobCount = _evaluateHandlers.Count;

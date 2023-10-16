@@ -8,6 +8,9 @@ All notable changes to this package will be documented in this file. The format 
 
 ### Changed
 
+* UX: auto link `SplineContainer` reference for `SplineClipData`
+* UX: `SplineMoveHandler` now explicit and auto linked reference for `SplineClipData`
+
 ### Fixed
 
 * fix `SplineClipData::Length` for timeline starting on awake first frame

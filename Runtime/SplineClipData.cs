@@ -9,10 +9,12 @@ namespace SplineScrubber
      * cache on start or serializing
      */
     [ExecuteAlways]
+    [DisallowMultipleComponent]
     public class SplineClipData : MonoBehaviour
     {
         [SerializeField] private SplineContainer _container;
-
+        [SerializeField] private SplinesMoveHandler _splinesMoveHandler;
+        
         public SplineEvaluateHandler JobHandler => _handler;
         public float Length
         {
@@ -49,13 +51,24 @@ namespace SplineScrubber
             {
                 if (!TryGetComponent(out _container))
                 {
-                    Debug.LogError("Missing SplineContainer!");
+                    Debug.LogError("Missing SplineContainer!", this);
                     enabled = false;
                     return;
                 }
             }
 
-            _handler = new SplineEvaluateHandler();
+            if (_splinesMoveHandler == null)
+            {
+                _splinesMoveHandler = SplinesMoveHandler.Instance;
+                if (_splinesMoveHandler == null)
+                {
+                    Debug.LogError("Missing SplineMoveHandler in the scene",this);
+                    enabled = false;
+                    return;
+                }
+            }
+
+            _handler = new SplineEvaluateHandler(_splinesMoveHandler);
 
             Spline.Changed += OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified += OnSplineModified;
