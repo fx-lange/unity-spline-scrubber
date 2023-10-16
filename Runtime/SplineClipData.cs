@@ -35,6 +35,7 @@ namespace SplineScrubber
         private SplinePath<Spline> _path;
         private NativeSpline _nativeSpline;
         private bool _init;
+        private bool _disposable;
 
         private void OnEnable()
         {
@@ -73,7 +74,7 @@ namespace SplineScrubber
 
             Spline.Changed += OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified += OnSplineModified;
-            CacheData();
+            PrepareSplineData();
             _init = true;
         }
 
@@ -90,7 +91,20 @@ namespace SplineScrubber
 
             _init = false;
         }
-        
+
+        private void Update()
+        {
+            if (!_init)
+            {
+                return;
+            }
+
+            if (_container.transform.hasChanged)
+            {
+                PrepareSplineData();
+            }
+        }
+
         private void OnSplineChanged(Spline spline, int _, SplineModification __)
         {
             OnSplineModified(spline);
@@ -103,20 +117,32 @@ namespace SplineScrubber
                 return;
             }
             
-            CacheData();
+            PrepareSplineData();
         }
 
-        private void CacheData()
+        private void PrepareSplineData()
         {
+            var splineTransform = _container.transform;
             _length = _container.CalculateLength();
             _path = new SplinePath<Spline>(_container.Splines);
-            _nativeSpline = new NativeSpline(_path, _container.transform.localToWorldMatrix, Allocator.Persistent);
+
+            Dispose();
+            _nativeSpline = new NativeSpline(_path, splineTransform.localToWorldMatrix, Allocator.Persistent);
             _handler.Spline = _nativeSpline;
+            _disposable = true;
+            
+            splineTransform.hasChanged = false;
         }
 
         private void Dispose()
         {
+            if (!_disposable)
+            {
+                return;
+            }
+            
             _nativeSpline.Dispose();
+            _disposable = false;
         }
     }
 }
