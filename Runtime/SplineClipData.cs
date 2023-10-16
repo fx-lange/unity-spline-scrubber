@@ -47,9 +47,12 @@ namespace SplineScrubber
         {
             if (_container == null)
             {
-                Debug.LogError("Missing SplineContainer!");
-                enabled = false;
-                return;
+                if (!TryGetComponent(out _container))
+                {
+                    Debug.LogError("Missing SplineContainer!");
+                    enabled = false;
+                    return;
+                }
             }
 
             _handler = new SplineEvaluateHandler();

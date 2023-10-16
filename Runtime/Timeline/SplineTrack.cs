@@ -8,7 +8,7 @@ namespace SplineScrubber.Timeline
     [TrackClipType(typeof(SplineClip))]
     [TrackBindingType(typeof(SplineCart))]
     [TrackColor(0f, 0.4150943f, 0.8301887f)]
-    [DisplayName("SplineScrubber/Track")]
+    [DisplayName("SplineScrubber")]
     public class SplineTrack : TrackAsset
     {
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
