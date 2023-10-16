@@ -13,6 +13,7 @@ All notable changes to this package will be documented in this file. The format 
 
 ### Fixed
 
+* crash/exceptions on `SplineClipData` disable/enable during edit mode
 * fix `SplineClipData::Length` for timeline starting on awake first frame
 
 ## [0.2.0] - 2023-07

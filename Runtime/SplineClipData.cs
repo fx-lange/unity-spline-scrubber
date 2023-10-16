@@ -1,3 +1,4 @@
+using System;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Splines;
@@ -86,6 +87,8 @@ namespace SplineScrubber
             {
                 moveInstance.Unregister(_handler);
             }
+
+            _init = false;
         }
         
         private void OnSplineChanged(Spline spline, int _, SplineModification __)
@@ -107,8 +110,6 @@ namespace SplineScrubber
         {
             _length = _container.CalculateLength();
             _path = new SplinePath<Spline>(_container.Splines);
-            
-            _nativeSpline.Dispose();
             _nativeSpline = new NativeSpline(_path, _container.transform.localToWorldMatrix, Allocator.Persistent);
             _handler.Spline = _nativeSpline;
         }
