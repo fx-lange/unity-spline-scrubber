@@ -31,14 +31,14 @@ namespace SplineScrubber
         private bool _init;
         private bool _disposable;
 
-        public void HandlePosUpdate(Transform target, float tPos)
+        public void HandlePosUpdate(Transform target, float tPos, bool ignoreRotation)
         {
             if (!_evaluateRunner.ReadyForInput)
             {
                 return; //can happen during drag clip
             }
             
-            var idx = _scheduler.Schedule(target);
+            var idx = _scheduler.Schedule(target, ignoreRotation);
             _evaluateRunner.HandlePosUpdate(tPos,idx);
         }
 

@@ -35,7 +35,7 @@ namespace SplineScrubber.Timeline
                 pos %= length; //looping
                 var tClip =  pos / length;
                 // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}"); 
-                splineController.HandlePosUpdate(cart.transform,(float)tClip);
+                splineController.HandlePosUpdate(cart.transform,(float)tClip, input.IgnoreRotation);
             }
         }
     }

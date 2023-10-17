@@ -13,17 +13,20 @@ namespace SplineScrubber.Timeline
         [NotKeyable] [Min(0.0001f)] [SerializeField]
         private float _speed = 1;
 
+        [NotKeyable] [SerializeField] private bool _ignoreRotation;
+        
         [NotKeyable] [Min(0)] [SerializeField] private float _accTime;
         [NotKeyable] [Min(0)] [SerializeField] private float _decTime;
         [SerializeField] private AnimationCurve _accCurve;
         [SerializeField] private AnimationCurve _decCurve;
-
+        
         [SerializeField] private float _accDistance;
         [SerializeField] private float _decDistance;
 
         public SplineJobController SplineController { get; set; }
         public float Duration { private get; set; }
         public float Speed => _speed;
+        public bool IgnoreRotation => _ignoreRotation;
         public float AccTime => _accTime;
 
         public float DecTime => _decTime;

@@ -10,6 +10,7 @@ namespace SplineScrubber
     public class TransformUpdateRunner
     {
         private TransformAccessArray _transformsAccess;
+        private NativeList<bool> _ignoreRotation;
         
         private NativeArray<float3> _pos;
         private NativeArray<float3> _tan;
@@ -20,11 +21,13 @@ namespace SplineScrubber
         public void Init(int capacity)
         {
             _transformsAccess = new TransformAccessArray(capacity);
+            _ignoreRotation = new NativeList<bool>(capacity, Allocator.Persistent);
         }
 
-        public void Schedule(Transform target)
+        public void Schedule(Transform target, bool ignoreRotation)
         {
             _transformsAccess.Add(target);
+            _ignoreRotation.Add(ignoreRotation);
         }
 
         public JobHandle PrepareMove(int count, List<SplineEvaluateRunner> evaluateRunners, JobHandle dependency)
@@ -59,7 +62,8 @@ namespace SplineScrubber
             {
                 Pos = _pos,
                 Tan = _tan,
-                Up = _up
+                Up = _up,
+                IgnoreRotation = _ignoreRotation.AsArray()
             };
 
             return transformJob.Schedule(_transformsAccess, dependency);
@@ -68,6 +72,7 @@ namespace SplineScrubber
         public void Dispose()
         {
             _transformsAccess.Dispose();
+            _ignoreRotation.Dispose();
             if (!_prepared)
             {
                 return;

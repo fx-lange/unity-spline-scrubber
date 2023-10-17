@@ -75,9 +75,9 @@ namespace SplineScrubber
             _evaluateRunners.Remove(runner);
         }
 
-        public int Schedule(Transform target)
+        public int Schedule(Transform target, bool ignoreRotation)
         {
-            _transformUpdateRunner.Schedule(target);
+            _transformUpdateRunner.Schedule(target, ignoreRotation);
             return _targetCount++;
         }
 

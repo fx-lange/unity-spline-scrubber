@@ -13,8 +13,10 @@ namespace SplineScrubber.Editor
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var speedProp = property.FindPropertyRelative("_speed");
+            var noRotProp = property.FindPropertyRelative("_ignoreRotation");
 
-            EditorGUILayout.PropertyField(speedProp);
+            EditorGUILayout.PropertyField(speedProp); 
+            EditorGUILayout.PropertyField(noRotProp);
             FoldOut("_accTime", "_accDistance", "_accCurve", ref _showAccFoldOut, "Acceleration");
             FoldOut("_decTime", "_decDistance", "_decCurve", ref _showDecFoldOut, "Deceleration");
 

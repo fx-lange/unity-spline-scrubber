@@ -5,7 +5,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 using UnityEngine.Splines;
-using UnityEngine.UIElements;
 
 namespace SplineScrubber
 {
@@ -48,8 +47,15 @@ namespace SplineScrubber
         [ReadOnly] public NativeArray<float3> Pos;
         [ReadOnly] public NativeArray<float3> Tan;
         [ReadOnly] public NativeArray<float3> Up;
+        [ReadOnly] public NativeArray<bool> IgnoreRotation;
         public void Execute(int index, TransformAccess transform)
         {
+            if (IgnoreRotation[index])
+            {
+                transform.position = Pos[index];
+                return;
+            }
+            
             var rotation = Quaternion.LookRotation(Tan[index], Up[index]);
             transform.SetPositionAndRotation(Pos[index], rotation);
         }
