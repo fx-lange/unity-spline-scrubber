@@ -25,5 +25,5 @@ To choreograph spline-driven animations with Spline Scrubber:
 * `SplineCart`: Attach this to the game objects you wish to animate. It serves as the track binding for the SplineTrack.
 * `SplineTrack`: For each object, add this custom timeline track to your timeline assets.
 * `SplineClip`: Use this custom timeline clip within the SplineTrack to dictate the object's movement along the spline for the clip's duration.
-* `SplineClipData`: For every Spline(Container), include this component to pre-process and cache spline data, optimizing job execution.
-* `SplineMoveHandler`: Ensure one instance of this singleton exists in your scene. It manages the real-time evaluation of splines and updates object transforms each frame.
+* `SplineJobController`: For every Spline(Container), include this component to pre-process and cache spline data, optimizing job execution.
+* `SplineJobsScheduler`: Ensure one instance of this singleton exists in your scene. It manages the real-time evaluation of splines and updates object transforms each frame.
