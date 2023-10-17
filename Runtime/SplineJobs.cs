@@ -54,6 +54,16 @@ namespace SplineScrubber
             transform.SetPositionAndRotation(Pos[index], rotation);
         }
     }
+    
+    [BurstCompile]
+    public struct UpdatePositions : IJobParallelForTransform
+    {
+        [ReadOnly] public NativeArray<float3> Pos;
+        public void Execute(int index, TransformAccess transform)
+        {
+            transform.position = Pos[index];
+        }
+    }
 
     [BurstCompile]
     public struct CollectResultsJob : IJob

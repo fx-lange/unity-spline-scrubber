@@ -6,15 +6,19 @@ All notable changes to this package will be documented in this file. The format 
 
 ### Added
 
+* support for clip extrapolation
+* support for linear acceleration & deceleration per clip
+
 ### Changed
 
-* UX: auto link `SplineContainer` reference for `SplineClipData`
-* UX: `SplineMoveHandler` now explicit and auto linked reference for `SplineClipData`
+* Renaming `SplineClipData` -> `SplineJobController`
+* Renaming `SplineMoveHandler` -> `SplineJobsScheduler`
+* UX: auto link `SplineContainer` reference for `SplineJobController`
 
 ### Fixed
 
-* `SplineClipData` not updating when spline transform changes
-* crash/exceptions on `SplineClipData` disable/enable during edit mode
+* `SplineJobController` not updating when spline transform changes
+* crash/exceptions on `SplineJobController` disable/enable during edit mode
 * `SplineClipData::Length` for timeline starting on awake first frame
 
 ## [0.2.0] - 2023-07

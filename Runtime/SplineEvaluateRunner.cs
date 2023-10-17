@@ -1,14 +1,14 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine;
 using UnityEngine.Splines;
 
 namespace SplineScrubber
 {
-    public class SplineEvaluateHandler
+    public class SplineEvaluateRunner
     {
         public int Count => Indices.Length;
+        public bool ReadyForInput { get; private set; } = true;
 
         public NativeList<int> Indices { get; private set; }
         public NativeArray<float3> Pos { get; private set; }
@@ -17,33 +17,22 @@ namespace SplineScrubber
         public NativeSpline Spline { get; set; }
 
         private NativeList<float> _times;
-        private readonly SplinesMoveHandler _moveHandler;
-        private bool _readyForInput = true;
 
-        public SplineEvaluateHandler(SplinesMoveHandler moveHandler)
+        public SplineEvaluateRunner(int capacity)
         {
-            _moveHandler = moveHandler;
-            _moveHandler.Register(this);
-            
-            Indices = new NativeList<int>(_moveHandler.Capacity, Allocator.Persistent);
-            _times = new NativeList<float>(_moveHandler.Capacity, Allocator.Persistent);
+            Indices = new NativeList<int>(capacity, Allocator.Persistent);
+            _times = new NativeList<float>(capacity, Allocator.Persistent);
         }
 
-        public void HandlePosUpdate(Transform target, float tPos)
+        public void HandlePosUpdate(float tPos, int idx)
         {
-            if (!_readyForInput)
-            {
-                return; //can happen during drag clip
-            }
-            
-            var idx = _moveHandler.Schedule(target);
             _times.Add(tPos);
             Indices.Add(idx);
         }
 
         public void Prepare()
         {
-            _readyForInput = false;
+            ReadyForInput = false;
             Pos = new NativeArray<float3>(Count, Allocator.TempJob);
             Tan = new NativeArray<float3>(Count, Allocator.TempJob);
             Up = new NativeArray<float3>(Count, Allocator.TempJob);
@@ -70,10 +59,10 @@ namespace SplineScrubber
             Tan.Dispose();
             Up.Dispose();
 
-            _readyForInput = true;
+            ReadyForInput = true;
         }
 
-        ~SplineEvaluateHandler()
+        ~SplineEvaluateRunner()
         {
             _times.Dispose();
             Indices.Dispose();

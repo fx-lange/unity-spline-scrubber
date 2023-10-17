@@ -1,22 +1,15 @@
-using System;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Splines;
 
 namespace SplineScrubber
 {
-    /* TODO
-     * edit vs playmode
-     * cache on start or serializing
-     */
     [ExecuteAlways]
     [DisallowMultipleComponent]
-    public class SplineClipData : MonoBehaviour
+    public class SplineJobController : MonoBehaviour
     {
         [SerializeField] private SplineContainer _container;
-        [SerializeField] private SplinesMoveHandler _splinesMoveHandler;
         
-        public SplineEvaluateHandler JobHandler => _handler;
         public float Length
         {
             get {
@@ -30,12 +23,24 @@ namespace SplineScrubber
 
         public SplinePath<Spline> SplinePath => _path;
 
-        private SplineEvaluateHandler _handler;
+        private SplineJobsScheduler _scheduler;
+        private SplineEvaluateRunner _evaluateRunner;
         private float _length;
         private SplinePath<Spline> _path;
         private NativeSpline _nativeSpline;
         private bool _init;
         private bool _disposable;
+
+        public void HandlePosUpdate(Transform target, float tPos)
+        {
+            if (!_evaluateRunner.ReadyForInput)
+            {
+                return; //can happen during drag clip
+            }
+            
+            var idx = _scheduler.Schedule(target);
+            _evaluateRunner.HandlePosUpdate(tPos,idx);
+        }
 
         private void OnEnable()
         {
@@ -59,18 +64,19 @@ namespace SplineScrubber
                 }
             }
 
-            if (_splinesMoveHandler == null)
+            if (_scheduler == null)
             {
-                _splinesMoveHandler = SplinesMoveHandler.Instance;
-                if (_splinesMoveHandler == null)
+                _scheduler = SplineJobsScheduler.Instance;
+                if (_scheduler == null)
                 {
-                    Debug.LogError("Missing SplineMoveHandler in the scene",this);
+                    Debug.LogError("Missing SplineJobsScheduler in the scene");
                     enabled = false;
                     return;
                 }
             }
 
-            _handler = new SplineEvaluateHandler(_splinesMoveHandler);
+            _evaluateRunner = new SplineEvaluateRunner(_scheduler.Capacity);
+            _scheduler.Register(_evaluateRunner);
 
             Spline.Changed += OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified += OnSplineModified;
@@ -83,10 +89,10 @@ namespace SplineScrubber
             Spline.Changed -= OnSplineChanged;
             // EditorSplineUtility.AfterSplineWasModified -= OnSplineModified;
             Dispose();
-            var moveInstance = SplinesMoveHandler.Instance;
+            var moveInstance = SplineJobsScheduler.Instance;
             if (moveInstance != null)
             {
-                moveInstance.Unregister(_handler);
+                moveInstance.Unregister(_evaluateRunner);
             }
 
             _init = false;
@@ -128,7 +134,7 @@ namespace SplineScrubber
 
             Dispose();
             _nativeSpline = new NativeSpline(_path, splineTransform.localToWorldMatrix, Allocator.Persistent);
-            _handler.Spline = _nativeSpline;
+            _evaluateRunner.Spline = _nativeSpline;
             _disposable = true;
             
             splineTransform.hasChanged = false;

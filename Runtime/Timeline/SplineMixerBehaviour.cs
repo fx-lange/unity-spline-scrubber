@@ -24,18 +24,18 @@ namespace SplineScrubber.Timeline
                     continue;
                 }
             
-                var splineData = input.SplineData;
-                if (splineData == null)
+                var splineController = input.SplineController;
+                if (splineController == null)
                 {
                     return;
                 }
 
                 var pos = input.EvaluateDistance(inputPlayable.GetTime());
-                var length = splineData.Length;
+                var length = splineController.Length;
                 pos %= length; //looping
                 var tClip =  pos / length;
                 // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}"); 
-                splineData.JobHandler.HandlePosUpdate(cart.transform,(float)tClip);
+                splineController.HandlePosUpdate(cart.transform,(float)tClip);
             }
         }
     }

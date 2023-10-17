@@ -1,16 +1,13 @@
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Jobs;
-using Transform = UnityEngine.Transform;
 
 namespace SplineScrubber
 {
     [ExecuteAlways]
-    public class SplinesMoveHandler : MonoBehaviour
+    public class SplineJobsScheduler : MonoBehaviour
     {
         [SerializeField] private int _capacity = 1000;
         [SerializeField] private int _batchCount = 2;
@@ -18,32 +15,28 @@ namespace SplineScrubber
         static readonly ProfilerMarker EvaluateMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Evaluate");
         static readonly ProfilerMarker MoveMarker = new(ProfilerCategory.Scripts, "SplinesMoveHandler.Move");
 
-        private readonly List<SplineEvaluateHandler> _evaluateHandlers = new();
-
-        private int _targetCount = 0;
-        private TransformAccessArray _transformsAccess;
-
-        private NativeArray<float3> _pos;
-        private NativeArray<float3> _tan;
-        private NativeArray<float3> _up;
-
+        private readonly List<SplineEvaluateRunner> _evaluateRunners = new();
+        private TransformUpdateRunner _transformUpdateRunner = new();
+        
         private NativeArray<JobHandle> _evaluateHandles;
         private JobHandle _prepareMoveHandle;
         private JobHandle _updateTransformHandle;
-
-        private static SplinesMoveHandler _instance;
-        private static bool _initialized;
+        
+        private int _targetCount = 0;
         private bool _didRun;
+
+        private static SplineJobsScheduler _instance;
+        private static bool _initialized;
 
         public int Capacity => _capacity;
 
-        public static SplinesMoveHandler Instance
+        public static SplineJobsScheduler Instance
         {
             get
             {
                 if (!_initialized)
                 {
-                    _instance = FindAnyObjectByType<SplinesMoveHandler>();
+                    _instance = FindAnyObjectByType<SplineJobsScheduler>();
                     _initialized = _instance != null;
                 }
 
@@ -51,9 +44,9 @@ namespace SplineScrubber
             }
         }
 
-        private void OnEnable() 
+        private void OnEnable()
         {
-            _transformsAccess = new TransformAccessArray(_capacity);
+            _transformUpdateRunner.Init(_capacity);
         }
 
         private void Update()
@@ -69,22 +62,22 @@ namespace SplineScrubber
 
         // private void OnPostRender()
         // {
-            // RunMove(_prepareMoveHandle); //B
+        // RunMove(_prepareMoveHandle); //B
         // }
-        
-        public void Register(SplineEvaluateHandler handler)
+
+        public void Register(SplineEvaluateRunner runner)
         {
-            _evaluateHandlers.Add(handler);
+            _evaluateRunners.Add(runner);
         }
 
-        public void Unregister(SplineEvaluateHandler handler)
+        public void Unregister(SplineEvaluateRunner runner)
         {
-            _evaluateHandlers.Remove(handler);
+            _evaluateRunners.Remove(runner);
         }
 
         public int Schedule(Transform target)
         {
-            _transformsAccess.Add(target);
+            _transformUpdateRunner.Schedule(target);
             return _targetCount++;
         }
 
@@ -110,12 +103,12 @@ namespace SplineScrubber
             void Evaluate()
             {
                 //run all evaluate jobs
-                var jobCount = _evaluateHandlers.Count;
+                var jobCount = _evaluateRunners.Count;
                 _evaluateHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
 
-                for (var idx = 0; idx < _evaluateHandlers.Count; idx++)
+                for (var idx = 0; idx < _evaluateRunners.Count; idx++)
                 {
-                    var handler = _evaluateHandlers[idx];
+                    var handler = _evaluateRunners[idx];
                     handler.Prepare();
                     _evaluateHandles[idx] = handler.Run(_batchCount);
                 }
@@ -124,41 +117,15 @@ namespace SplineScrubber
             void PrepareMove()
             {
                 int count = _targetCount;
-                _pos = new NativeArray<float3>(count, Allocator.TempJob);
-                _tan = new NativeArray<float3>(count, Allocator.TempJob);
-                _up = new NativeArray<float3>(count, Allocator.TempJob);
-
-                _prepareMoveHandle = JobHandle.CombineDependencies(_evaluateHandles);
-                foreach (var handler in _evaluateHandlers)
-                {
-                    CollectResultsJob collectJob = new()
-                    {
-                        Indices = handler.Indices,
-                        PosIn = handler.Pos,
-                        TanIn = handler.Tan,
-                        UpIn = handler.Up,
-                        Length = handler.Count,
-                        Pos = _pos,
-                        Tan = _tan,
-                        Up = _up
-                    };
-                    _prepareMoveHandle = collectJob.Schedule(_prepareMoveHandle);
-                }
+                var evaluateHandle = JobHandle.CombineDependencies(_evaluateHandles);
+                _prepareMoveHandle = _transformUpdateRunner.PrepareMove(count, _evaluateRunners, evaluateHandle);
             }
         }
 
         private void RunMove(JobHandle dependency)
         {
             if (!_didRun) return;
-
-            UpdateTransforms transformJob = new()
-            {
-                Pos = _pos,
-                Tan = _tan,
-                Up = _up
-            };
-
-            _updateTransformHandle = transformJob.Schedule(_transformsAccess, dependency);
+            _updateTransformHandle = _transformUpdateRunner.RunMove(dependency);
         }
 
         private void FinishFrame()
@@ -173,24 +140,21 @@ namespace SplineScrubber
         {
             _didRun = false;
             _targetCount = 0;
-            foreach (var evaluate in _evaluateHandlers)
+            foreach (var evaluate in _evaluateRunners)
             {
                 evaluate.ClearAndDispose();
             }
 
-            _transformsAccess.Dispose();
-            _transformsAccess = new TransformAccessArray(_capacity);
+            _transformUpdateRunner.Dispose();
             _evaluateHandles.Dispose();
-            _pos.Dispose();
-            _tan.Dispose();
-            _up.Dispose();
+            _transformUpdateRunner.Init(_capacity);
         }
 
         private void OnDisable()
         {
             _prepareMoveHandle.Complete();
             FinishFrame();
-            _transformsAccess.Dispose();
+            _transformUpdateRunner.Dispose(); 
             _initialized = false;
         }
     }

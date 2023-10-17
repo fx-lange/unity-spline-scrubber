@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Serialization;
 using UnityEngine.Timeline;
 
 namespace SplineScrubber.Timeline
@@ -8,7 +9,8 @@ namespace SplineScrubber.Timeline
     [Serializable]
     public class SplineClip : PlayableAsset, ITimelineClipAsset
     {
-        [SerializeField] private ExposedReference<SplineClipData> _splineData;
+        [FormerlySerializedAs("_splineData")] 
+        [SerializeField] private ExposedReference<SplineJobController> _splineController;
         [SerializeField] private SplineClipBehaviour _behaviour = new();
         
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping | ClipCaps.Extrapolation;
@@ -22,11 +24,11 @@ namespace SplineScrubber.Timeline
         {
             var playable = ScriptPlayable<SplineClipBehaviour>.Create(graph, _behaviour);
             var clone = playable.GetBehaviour();
-            var splineClipData = _splineData.Resolve(graph.GetResolver());
-            if (splineClipData)
+            var splineController = _splineController.Resolve(graph.GetResolver());
+            if (splineController)
             {
-                PathLength = splineClipData.Length;
-                clone.SplineData = splineClipData;
+                PathLength = splineController.Length;
+                clone.SplineController = splineController;
             }
 
             clone.Duration = GetDuration();
@@ -48,7 +50,7 @@ namespace SplineScrubber.Timeline
 
         private void OnValidate()
         {
-            Debug.Log("OnValidate");
+            // Debug.Log("OnValidate");
             _behaviour.UpdateAccDecDistance();
         }
     }
