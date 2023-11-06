@@ -1,4 +1,5 @@
 using UnityEngine.Playables;
+using SplineScrubber.Timeline.Clips;
 
 namespace SplineScrubber.Timeline
 {
@@ -16,7 +17,7 @@ namespace SplineScrubber.Timeline
             for (int i = 0; i < inputCount; i++)
             {
                 float inputWeight = playable.GetInputWeight(i);
-                ScriptPlayable<SplineClipBehaviour> inputPlayable = (ScriptPlayable<SplineClipBehaviour>)playable.GetInput(i);
+                ScriptPlayable<BaseSplineBehaviour> inputPlayable = (ScriptPlayable<BaseSplineBehaviour>)playable.GetInput(i);
                 var input = inputPlayable.GetBehaviour ();
                 
                 if (inputWeight <= 0f)
@@ -30,12 +31,8 @@ namespace SplineScrubber.Timeline
                     return;
                 }
 
-                var pos = input.EvaluateDistance(inputPlayable.GetTime());
-                var length = splineController.Length;
-                pos %= length; //looping
-                var tClip =  pos / length;
-                // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}"); 
-                splineController.HandlePosUpdate(cart.transform,(float)tClip);
+                var pos = input.EvaluateNormPos(inputPlayable.GetTime());
+                splineController.HandlePosUpdate(cart.transform,(float)pos);
             }
         }
     }

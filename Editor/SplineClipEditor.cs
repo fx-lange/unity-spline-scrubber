@@ -1,16 +1,16 @@
 using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Timeline;
-using SplineScrubber.Timeline;
+using SplineScrubber.Timeline.Clips;
 
 namespace SplineScrubber.Editor
 {
-    [CustomTimelineEditor(typeof(SplineClip))]
+    [CustomTimelineEditor(typeof(SplineSpeedClip))]
     public class SplineClipEditor : ClipEditor
     {
         public override void OnCreate(TimelineClip clip, TrackAsset track, TimelineClip clonedFrom)
         {
-            var asset = clip.asset as SplineClip;
+            var asset = clip.asset as SplineSpeedClip;
             base.OnCreate(clip, track, clonedFrom);
             asset.InitialClipDurationSet = clonedFrom != null;
         }
@@ -18,7 +18,7 @@ namespace SplineScrubber.Editor
         public override void OnClipChanged(TimelineClip clip)
         {
             base.OnClipChanged(clip);
-            var asset = clip.asset as SplineClip;
+            var asset = clip.asset as SplineSpeedClip;
             
             if (asset.InitialClipDurationSet) return;
         

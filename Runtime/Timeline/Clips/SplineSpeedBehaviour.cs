@@ -2,13 +2,12 @@ using System;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Serialization;
 using UnityEngine.Timeline;
 
-namespace SplineScrubber.Timeline
+namespace SplineScrubber.Timeline.Clips
 {
     [Serializable]
-    public class SplineClipBehaviour : PlayableBehaviour
+    public class SplineSpeedBehaviour : BaseSplineBehaviour
     {
         [NotKeyable] [Min(0.0001f)] [SerializeField]
         private float _speed = 1;
@@ -20,8 +19,7 @@ namespace SplineScrubber.Timeline
 
         [SerializeField] private float _accDistance;
         [SerializeField] private float _decDistance;
-
-        public SplineJobController SplineController { get; set; }
+        
         public float Duration { private get; set; }
         public float Speed => _speed;
         public float AccTime => _accTime;
@@ -34,13 +32,13 @@ namespace SplineScrubber.Timeline
             _decDistance = DecTime * Speed / 2f;
         }
 
-        public double EvaluateDistance(double time)
+        public override double EvaluateNormPos(double time)
         {
             if (Duration == 0) return 0;
 
             var innerTime = time % Duration;
-            var loops = math.floor(time / Duration);
-            return EvalInnerDistance(innerTime) + loops * SplineController.Length;
+            var distance = EvalInnerDistance(innerTime);
+            return distance / SplineController.Length;
 
             double EvalInnerDistance(double t)
             {

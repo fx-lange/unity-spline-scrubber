@@ -2,10 +2,11 @@ using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using SplineScrubber.Timeline.Clips;
 
 namespace SplineScrubber.Timeline
 {
-    [TrackClipType(typeof(SplineClip))]
+    [TrackClipType(typeof(SplineSpeedClip))]
     [TrackBindingType(typeof(SplineCart))]
     [TrackColor(0f, 0.4150943f, 0.8301887f)]
     [DisplayName("SplineScrubber/Track")]

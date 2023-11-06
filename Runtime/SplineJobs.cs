@@ -5,7 +5,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 using UnityEngine.Splines;
-using UnityEngine.UIElements;
 
 namespace SplineScrubber
 {

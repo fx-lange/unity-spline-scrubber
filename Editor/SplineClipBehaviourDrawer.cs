@@ -1,10 +1,10 @@
 using UnityEditor;
 using UnityEngine;
-using SplineScrubber.Timeline;
+using SplineScrubber.Timeline.Clips;
 
 namespace SplineScrubber.Editor
 {
-    [CustomPropertyDrawer(typeof(SplineClipBehaviour))]
+    [CustomPropertyDrawer(typeof(SplineSpeedBehaviour))]
     public class SplineClipBehaviourDrawer : PropertyDrawer
     {
         private bool _showAccFoldOut = true;

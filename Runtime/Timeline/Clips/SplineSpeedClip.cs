@@ -1,17 +1,15 @@
 using System;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.Serialization;
 using UnityEngine.Timeline;
 
-namespace SplineScrubber.Timeline
+namespace SplineScrubber.Timeline.Clips
 {
     [Serializable]
-    public class SplineClip : PlayableAsset, ITimelineClipAsset
+    public class SplineSpeedClip : PlayableAsset, ITimelineClipAsset
     {
-        [FormerlySerializedAs("_splineData")] 
         [SerializeField] private ExposedReference<SplineJobController> _splineController;
-        [SerializeField] private SplineClipBehaviour _behaviour = new();
+        [SerializeField] private SplineSpeedBehaviour _behaviour = new();
         
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Looping | ClipCaps.Extrapolation;
 
@@ -22,7 +20,7 @@ namespace SplineScrubber.Timeline
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
-            var playable = ScriptPlayable<SplineClipBehaviour>.Create(graph, _behaviour);
+            var playable = ScriptPlayable<SplineSpeedBehaviour>.Create(graph, _behaviour);
             var clone = playable.GetBehaviour();
             var splineController = _splineController.Resolve(graph.GetResolver());
             if (splineController)
