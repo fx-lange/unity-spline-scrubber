@@ -6,7 +6,7 @@ using SplineScrubber.Timeline.Clips;
 namespace SplineScrubber.Editor
 {
     [CustomTimelineEditor(typeof(SplineSpeedClip))]
-    public class SplineClipEditor : ClipEditor
+    public class SplineSpeedClipEditor : ClipEditor
     {
         public override void OnCreate(TimelineClip clip, TrackAsset track, TimelineClip clonedFrom)
         {

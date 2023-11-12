@@ -5,7 +5,7 @@ using SplineScrubber.Timeline.Clips;
 namespace SplineScrubber.Editor
 {
     [CustomPropertyDrawer(typeof(SplineSpeedBehaviour))]
-    public class SplineClipBehaviourDrawer : PropertyDrawer
+    public class SplineSpeedDrawer : PropertyDrawer
     {
         private bool _showAccFoldOut = true;
         private bool _showDecFoldOut = true;
