@@ -14,6 +14,7 @@ All notable changes to this package will be documented in this file. The format 
 * Renaming `SplineClipData` -> `SplineJobController`
 * Renaming `SplineMoveHandler` -> `SplineJobsScheduler`
 * UX: auto link `SplineContainer` reference for `SplineJobController`
+* Moved evaluation call from mixer in to `SplineCart` for better extendability
 
 ### Bug Fixes
 

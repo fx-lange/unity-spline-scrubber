@@ -6,24 +6,22 @@ namespace SplineScrubber.Timeline
     {
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
-            var cart = playerData as SplineCart;
-
-            if (!cart)
+            if (playerData is not SplineCart cart)
                 return;
 
-            int inputCount = playable.GetInputCount ();
+            var inputCount = playable.GetInputCount();
 
-            for (int i = 0; i < inputCount; i++)
+            for (var i = 0; i < inputCount; i++)
             {
-                float inputWeight = playable.GetInputWeight(i);
-                ScriptPlayable<SplineClipBehaviour> inputPlayable = (ScriptPlayable<SplineClipBehaviour>)playable.GetInput(i);
-                var input = inputPlayable.GetBehaviour ();
-                
+                var inputWeight = playable.GetInputWeight(i);
+                var inputPlayable = (ScriptPlayable<SplineClipBehaviour>)playable.GetInput(i);
+                var input = inputPlayable.GetBehaviour();
+
                 if (inputWeight <= 0f)
                 {
                     continue;
                 }
-            
+
                 var splineController = input.SplineController;
                 if (splineController == null)
                 {
@@ -33,9 +31,7 @@ namespace SplineScrubber.Timeline
                 var pos = input.EvaluateDistance(inputPlayable.GetTime());
                 var length = splineController.Length;
                 pos %= length; //looping
-                var tClip =  pos / length;
-                // Debug.Log($"{Time.frameCount} Pos:{pos} T:{tClip} InputWeight:{inputWeight}"); 
-                splineController.HandlePosUpdate(cart.transform,(float)tClip);
+                cart.UpdatePosition(splineController, (float)pos, length);
             }
         }
     }
