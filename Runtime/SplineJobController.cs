@@ -69,7 +69,7 @@ namespace SplineScrubber
                 _scheduler = SplineJobsScheduler.Instance;
                 if (_scheduler == null)
                 {
-                    Debug.LogError("Missing SplineJobsScheduler in the scene");
+                    Debug.LogWarning("Missing SplineJobsScheduler in the scene");
                     enabled = false;
                     return;
                 }

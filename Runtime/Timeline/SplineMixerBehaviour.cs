@@ -7,32 +7,30 @@ namespace SplineScrubber.Timeline
     {
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
-            var cart = playerData as SplineCart;
-
-            if (!cart)
+            if (playerData is not SplineCart cart)
                 return;
 
-            int inputCount = playable.GetInputCount ();
+            var inputCount = playable.GetInputCount();
 
-            for (int i = 0; i < inputCount; i++)
+            for (var i = 0; i < inputCount; i++)
             {
-                float inputWeight = playable.GetInputWeight(i);
-                ScriptPlayable<BaseSplineBehaviour> inputPlayable = (ScriptPlayable<BaseSplineBehaviour>)playable.GetInput(i);
+                var inputWeight = playable.GetInputWeight(i);
+                var inputPlayable = (ScriptPlayable<BaseSplineBehaviour>)playable.GetInput(i);
                 var input = inputPlayable.GetBehaviour ();
                 
                 if (inputWeight <= 0f)
                 {
                     continue;
                 }
-            
+
                 var splineController = input.SplineController;
                 if (splineController == null)
                 {
                     return;
                 }
 
-                var pos = input.EvaluateNormPos(inputPlayable.GetTime());
-                splineController.HandlePosUpdate(cart.transform,(float)pos);
+                var tPos = input.EvaluateNormPos(inputPlayable.GetTime());
+                cart.UpdatePosition(splineController, (float)tPos, splineController.Length);
             }
         }
     }
