@@ -31,7 +31,7 @@ namespace SplineScrubber
         private bool _init;
         private bool _disposable;
 
-        public void HandlePosUpdate(Transform target, float tPos)
+        public void HandlePosUpdate(Transform target, float t)
         {
             if (!_evaluateRunner.ReadyForInput)
             {
@@ -39,7 +39,7 @@ namespace SplineScrubber
             }
             
             var idx = _scheduler.Schedule(target);
-            _evaluateRunner.HandlePosUpdate(tPos,idx);
+            _evaluateRunner.HandlePosUpdate(t,idx);
         }
 
         private void OnEnable()

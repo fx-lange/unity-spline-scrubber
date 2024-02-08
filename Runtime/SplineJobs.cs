@@ -25,7 +25,7 @@ namespace SplineScrubber
     [BurstCompile]
     public struct SplineEvaluate : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<float> ElapsedTimes;
+        [ReadOnly] public NativeArray<float> Ratios;
         [ReadOnly] public NativeSpline Spline;
 
         public NativeArray<float3> Pos;
@@ -34,7 +34,7 @@ namespace SplineScrubber
 
         public void Execute(int index)
         {
-            Spline.Evaluate(ElapsedTimes[index], out float3 position, out float3 tangent, out float3 up);
+            Spline.Evaluate(Ratios[index], out float3 position, out float3 tangent, out float3 up);
             Pos[index] = position;
             Tan[index] = tangent;
             Up[index] = up;
@@ -49,7 +49,7 @@ namespace SplineScrubber
         [ReadOnly] public NativeArray<float3> Up;
         public void Execute(int index, TransformAccess transform)
         {
-            var rotation = Quaternion.LookRotation(Tan[index], Up[index]);
+            var rotation = quaternion.LookRotation(Tan[index], Up[index]);
             transform.SetPositionAndRotation(Pos[index], rotation);
         }
     }

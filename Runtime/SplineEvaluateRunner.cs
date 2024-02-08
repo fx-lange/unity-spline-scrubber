@@ -16,17 +16,17 @@ namespace SplineScrubber
         public NativeArray<float3> Up { get; private set; }
         public NativeSpline Spline { get; set; }
 
-        private NativeList<float> _times;
+        private NativeList<float> _ratios;
 
         public SplineEvaluateRunner(int capacity)
         {
             Indices = new NativeList<int>(capacity, Allocator.Persistent);
-            _times = new NativeList<float>(capacity, Allocator.Persistent);
+            _ratios = new NativeList<float>(capacity, Allocator.Persistent);
         }
 
-        public void HandlePosUpdate(float tPos, int idx)
+        public void HandlePosUpdate(float t, int idx)
         {
-            _times.Add(tPos);
+            _ratios.Add(t);
             Indices.Add(idx);
         }
 
@@ -43,18 +43,18 @@ namespace SplineScrubber
             SplineEvaluate evaluateJob = new()
             {
                 Spline = Spline,
-                ElapsedTimes = _times.AsArray(),
+                Ratios = _ratios.AsArray(),
                 Pos = Pos,
                 Tan = Tan,
                 Up = Up
             };
-            return evaluateJob.Schedule(_times.Length, batchCount);
+            return evaluateJob.Schedule(_ratios.Length, batchCount);
         }
 
         public void ClearAndDispose()
         {
             Indices.Clear();
-            _times.Clear();
+            _ratios.Clear();
             Pos.Dispose();
             Tan.Dispose();
             Up.Dispose();
@@ -64,7 +64,7 @@ namespace SplineScrubber
 
         ~SplineEvaluateRunner()
         {
-            _times.Dispose();
+            _ratios.Dispose();
             Indices.Dispose();
         }
     }

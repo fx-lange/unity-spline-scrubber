@@ -4,9 +4,9 @@ namespace SplineScrubber
 {
     public class SplineCart : MonoBehaviour
     {
-        public virtual void UpdatePosition(SplineJobController controller, float tPos, float length)
+        public virtual void UpdatePosition(SplineJobController controller, float t, float length)
         {
-            controller.HandlePosUpdate(transform, tPos);
+            controller.HandlePosUpdate(transform, t);
         }
     }
 }
