@@ -12,8 +12,7 @@ namespace SplineScrubber
 
         public NativeList<int> Indices { get; private set; }
         public NativeArray<float3> Pos { get; private set; }
-        public NativeArray<float3> Tan { get; private set; }
-        public NativeArray<float3> Up { get; private set; }
+        public NativeArray<quaternion> Rotation { get; private set; }
         public NativeSpline Spline { get; set; }
 
         private NativeList<float> _ratios;
@@ -34,8 +33,7 @@ namespace SplineScrubber
         {
             ReadyForInput = false;
             Pos = new NativeArray<float3>(Count, Allocator.TempJob);
-            Tan = new NativeArray<float3>(Count, Allocator.TempJob);
-            Up = new NativeArray<float3>(Count, Allocator.TempJob);
+            Rotation = new NativeArray<quaternion>(Count, Allocator.TempJob);
         }
         
         public JobHandle Run(int batchCount = 2)
@@ -45,8 +43,7 @@ namespace SplineScrubber
                 Spline = Spline,
                 Ratios = _ratios.AsArray(),
                 Pos = Pos,
-                Tan = Tan,
-                Up = Up
+                Rotation = Rotation
             };
             return evaluateJob.Schedule(_ratios.Length, batchCount);
         }
@@ -56,8 +53,7 @@ namespace SplineScrubber
             Indices.Clear();
             _ratios.Clear();
             Pos.Dispose();
-            Tan.Dispose();
-            Up.Dispose();
+            Rotation.Dispose();
 
             ReadyForInput = true;
         }

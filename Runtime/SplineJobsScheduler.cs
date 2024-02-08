@@ -46,6 +46,10 @@ namespace SplineScrubber
 
         private void OnEnable()
         {
+            if (Instance != this)
+            {
+                Debug.LogError("Scheduler already exists, abort!");
+            }
             _transformUpdateRunner.Init(_capacity);
         }
 

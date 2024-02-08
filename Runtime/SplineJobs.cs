@@ -29,15 +29,13 @@ namespace SplineScrubber
         [ReadOnly] public NativeSpline Spline;
 
         public NativeArray<float3> Pos;
-        public NativeArray<float3> Tan;
-        public NativeArray<float3> Up;
+        public NativeArray<quaternion> Rotation;
 
         public void Execute(int index)
         {
             Spline.Evaluate(Ratios[index], out float3 position, out float3 tangent, out float3 up);
             Pos[index] = position;
-            Tan[index] = tangent;
-            Up[index] = up;
+            Rotation[index] = quaternion.LookRotation(tangent, up);
         }
     }
     
@@ -45,12 +43,10 @@ namespace SplineScrubber
     public struct UpdateTransforms : IJobParallelForTransform
     {
         [ReadOnly] public NativeArray<float3> Pos;
-        [ReadOnly] public NativeArray<float3> Tan;
-        [ReadOnly] public NativeArray<float3> Up;
+        [ReadOnly] public NativeArray<quaternion> Rotation;
         public void Execute(int index, TransformAccess transform)
         {
-            var rotation = quaternion.LookRotation(Tan[index], Up[index]);
-            transform.SetPositionAndRotation(Pos[index], rotation);
+            transform.SetPositionAndRotation(Pos[index], Rotation[index]);
         }
     }
     
@@ -69,14 +65,12 @@ namespace SplineScrubber
     {
         [ReadOnly] public NativeList<int> Indices;
         [ReadOnly] public NativeArray<float3> PosIn;
-        [ReadOnly] public NativeArray<float3> TanIn;
-        [ReadOnly] public NativeArray<float3> UpIn;
+        [ReadOnly] public NativeArray<quaternion> RotateIn;
 
         [ReadOnly] public int Length;
 
         [WriteOnly] public NativeArray<float3> Pos;
-        [WriteOnly] public NativeArray<float3> Tan;
-        [WriteOnly] public NativeArray<float3> Up;
+        [WriteOnly] public NativeArray<quaternion> Rotation;
 
         public void Execute()
         {
@@ -84,8 +78,7 @@ namespace SplineScrubber
             {
                 int mappedIdx = Indices[i];
                 Pos[mappedIdx] = PosIn[i];
-                Tan[mappedIdx] = TanIn[i];
-                Up[mappedIdx] = UpIn[i];
+                Rotation[mappedIdx] = RotateIn[i];
             }
         }
     }

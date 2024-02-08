@@ -16,6 +16,8 @@ All notable changes to this package will be documented in this file. The format 
 * Renaming `SplineMoveHandler` -> `SplineJobsScheduler`
 * UX: auto link `SplineContainer` reference for `SplineJobController`
 * Moved evaluation call from mixer in to `SplineCart` for better extendability
+* Use `Unity.mathematics.quaternion` for better burst
+* Calculate rotation from tan&up in `SplineEvaluate` Job
 
 ### Bug Fixes
 

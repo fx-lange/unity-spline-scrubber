@@ -12,8 +12,7 @@ namespace SplineScrubber
         private TransformAccessArray _transformsAccess;
         
         private NativeArray<float3> _pos;
-        private NativeArray<float3> _tan;
-        private NativeArray<float3> _up;
+        private NativeArray<quaternion> _rotation;
 
         private bool _prepared = false;
         
@@ -30,8 +29,7 @@ namespace SplineScrubber
         public JobHandle PrepareMove(int count, List<SplineEvaluateRunner> evaluateRunners, JobHandle dependency)
         {
             _pos = new NativeArray<float3>(count, Allocator.TempJob);
-            _tan = new NativeArray<float3>(count, Allocator.TempJob);
-            _up = new NativeArray<float3>(count, Allocator.TempJob);
+            _rotation = new NativeArray<quaternion>(count, Allocator.TempJob);
             
             foreach (var evaluateRunner in evaluateRunners)
             {
@@ -39,12 +37,10 @@ namespace SplineScrubber
                 {
                     Indices = evaluateRunner.Indices,
                     PosIn = evaluateRunner.Pos,
-                    TanIn = evaluateRunner.Tan,
-                    UpIn = evaluateRunner.Up,
+                    RotateIn = evaluateRunner.Rotation,
                     Length = evaluateRunner.Count,
                     Pos = _pos,
-                    Tan = _tan,
-                    Up = _up
+                    Rotation = _rotation,
                 };
                 dependency = collectJob.Schedule(dependency);
             }
@@ -58,8 +54,7 @@ namespace SplineScrubber
             UpdateTransforms transformJob = new()
             {
                 Pos = _pos,
-                Tan = _tan,
-                Up = _up
+                Rotation = _rotation
             };
 
             return transformJob.Schedule(_transformsAccess, dependency);
@@ -74,8 +69,7 @@ namespace SplineScrubber
             }
             
             _pos.Dispose();
-            _tan.Dispose();
-            _up.Dispose();
+            _rotation.Dispose();
 
             _prepared = false;
         }
