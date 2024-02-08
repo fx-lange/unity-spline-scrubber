@@ -6,8 +6,9 @@ All notable changes to this package will be documented in this file. The format 
 
 ### Added
 
+* New TweenClip additional to the speed based clip
+* Support for linear acceleration & deceleration per speed based clips
 * Support for clip extrapolation
-* Support for linear acceleration & deceleration per clip
 
 ### Changed
 

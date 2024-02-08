@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace SplineScrubber.Timeline.Clips
@@ -6,6 +7,8 @@ namespace SplineScrubber.Timeline.Clips
     [Serializable]
     public class SplineTweenBehaviour : BaseSplineBehaviour
     {
+        [SerializeField] [Range(0,1)] private float _from;
+        [SerializeField] [Range(0,1)] private float _to = 1f;
         [SerializeField] private TweenType _tweenType;
         [SerializeField] private AnimationCurve _customCurve = AnimationCurve.Linear(0,0,1,1);
         
@@ -37,7 +40,9 @@ namespace SplineScrubber.Timeline.Clips
                 TweenType.Custom => _customCurve.Evaluate(timeNormalized),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            return timeNormalized;
+
+            var pos = math.lerp(_from, _to, timeNormalized);
+            return pos;
         }
         
         private bool IsCustomCurveNormalised ()
