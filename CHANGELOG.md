@@ -18,6 +18,7 @@ All notable changes to this package will be documented in this file. The format 
 * Moved evaluation call from mixer in to `SplineCart` for better extendability
 * Use `Unity.mathematics.quaternion` for better burst
 * Calculate rotation from tan&up in `SplineEvaluate` Job
+* Spline localToWorld now handled in `SplineEvaluate` not via `NativeSpline` construction
 
 ### Bug Fixes
 

@@ -27,6 +27,8 @@ namespace SplineScrubber
     {
         [ReadOnly] public NativeArray<float> Ratios;
         [ReadOnly] public NativeSpline Spline;
+        [ReadOnly] public float4x4 LocalToWorld;
+        [ReadOnly] public quaternion LocalToWorldRotation;
 
         public NativeArray<float3> Pos;
         public NativeArray<quaternion> Rotation;
@@ -34,8 +36,8 @@ namespace SplineScrubber
         public void Execute(int index)
         {
             Spline.Evaluate(Ratios[index], out float3 position, out float3 tangent, out float3 up);
-            Pos[index] = position;
-            Rotation[index] = quaternion.LookRotation(tangent, up);
+            Pos[index] = math.transform(LocalToWorld, position);
+            Rotation[index] = math.mul(LocalToWorldRotation,quaternion.LookRotation(tangent, up));
         }
     }
     

@@ -98,19 +98,6 @@ namespace SplineScrubber
             _init = false;
         }
 
-        private void Update()
-        {
-            if (!_init)
-            {
-                return;
-            }
-
-            if (_container.transform.hasChanged)
-            {
-                PrepareSplineData();
-            }
-        }
-
         private void OnSplineChanged(Spline spline, int _, SplineModification __)
         {
             OnSplineModified(spline);
@@ -128,16 +115,14 @@ namespace SplineScrubber
 
         private void PrepareSplineData()
         {
-            var splineTransform = _container.transform;
             _length = _container.CalculateLength();
             _path = new SplinePath<Spline>(_container.Splines);
 
             Dispose();
-            _nativeSpline = new NativeSpline(_path, splineTransform.localToWorldMatrix, Allocator.Persistent);
+            _nativeSpline = new NativeSpline(_path, Allocator.Persistent);
             _evaluateRunner.Spline = _nativeSpline;
+            _evaluateRunner.SplineTransform = _container.transform;
             _disposable = true;
-            
-            splineTransform.hasChanged = false;
         }
 
         private void Dispose()

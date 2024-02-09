@@ -1,6 +1,7 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine;
 using UnityEngine.Splines;
 
 namespace SplineScrubber
@@ -14,6 +15,7 @@ namespace SplineScrubber
         public NativeArray<float3> Pos { get; private set; }
         public NativeArray<quaternion> Rotation { get; private set; }
         public NativeSpline Spline { get; set; }
+        public Transform SplineTransform { get; set; }
 
         private NativeList<float> _ratios;
 
@@ -43,7 +45,9 @@ namespace SplineScrubber
                 Spline = Spline,
                 Ratios = _ratios.AsArray(),
                 Pos = Pos,
-                Rotation = Rotation
+                Rotation = Rotation,
+                LocalToWorld = SplineTransform.localToWorldMatrix,
+                LocalToWorldRotation = SplineTransform.rotation
             };
             return evaluateJob.Schedule(_ratios.Length, batchCount);
         }
