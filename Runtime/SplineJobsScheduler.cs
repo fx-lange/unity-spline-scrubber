@@ -112,9 +112,9 @@ namespace SplineScrubber
 
                 for (var idx = 0; idx < _evaluateRunners.Count; idx++)
                 {
-                    var handler = _evaluateRunners[idx];
-                    handler.Prepare();
-                    _evaluateHandles[idx] = handler.Run(_batchCount);
+                    var evaluateRunner = _evaluateRunners[idx];
+                    evaluateRunner.Prepare();
+                    _evaluateHandles[idx] = evaluateRunner.Run(_batchCount);
                 }
             }
 
