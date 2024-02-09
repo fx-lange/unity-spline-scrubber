@@ -14,11 +14,11 @@ namespace SplineScrubber.Timeline.Clips
 
         [NotKeyable] [Min(0)] [SerializeField] private float _accTime;
         [NotKeyable] [Min(0)] [SerializeField] private float _decTime;
-        [SerializeField] private AnimationCurve _accCurve;
-        [SerializeField] private AnimationCurve _decCurve;
+        // [SerializeField] private AnimationCurve _accCurve;
+        // [SerializeField] private AnimationCurve _decCurve;
 
-        [SerializeField] private float _accDistance;
-        [SerializeField] private float _decDistance;
+        [NotKeyable] [Min(0)] [SerializeField] private float _accDistance;
+        [NotKeyable] [Min(0)] [SerializeField] private float _decDistance;
         
         public float Duration { private get; set; }
         public float Speed => _speed;

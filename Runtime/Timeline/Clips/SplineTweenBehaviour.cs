@@ -1,14 +1,15 @@
 using System;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace SplineScrubber.Timeline.Clips
 {
     [Serializable]
     public class SplineTweenBehaviour : BaseSplineBehaviour
     {
-        [SerializeField] [Range(0,1)] private float _from;
-        [SerializeField] [Range(0,1)] private float _to = 1f;
+        [SerializeField] [NotKeyable] [Range(0,1)] private float _from;
+        [SerializeField] [NotKeyable] [Range(0,1)] private float _to = 1f;
         [SerializeField] private TweenType _tweenType;
         [SerializeField] private AnimationCurve _customCurve = AnimationCurve.Linear(0,0,1,1);
         

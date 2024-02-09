@@ -47,7 +47,7 @@ namespace SplineScrubber
                 Pos = Pos,
                 Rotation = Rotation,
                 LocalToWorld = SplineTransform.localToWorldMatrix,
-                LocalToWorldRotation = SplineTransform.rotation
+                SplineRotation = SplineTransform.rotation
             };
             return evaluateJob.Schedule(_ratios.Length, batchCount);
         }

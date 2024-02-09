@@ -34,7 +34,7 @@ namespace SplineScrubber.Editor
                 EditorGUILayout.LabelField($"~{distanceProp.floatValue:F2}m");
                 EditorGUILayout.EndHorizontal();
 
-                EditorGUILayout.PropertyField(curveProp);
+                // EditorGUILayout.PropertyField(curveProp);
                 EditorGUI.indentLevel -= 1;
             }
         }
