@@ -79,8 +79,12 @@ namespace SplineScrubber
             _evaluateRunners.Remove(runner);
         }
 
-        public int Schedule(Transform target)
+        public int Schedule(Transform target) //TODO if disabled suddenly
         {
+            if (!enabled)
+            {
+                return -1;
+            }
             _transformUpdateRunner.Schedule(target);
             return _targetCount++;
         }

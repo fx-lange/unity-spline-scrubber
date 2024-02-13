@@ -13,7 +13,7 @@ namespace SplineScrubber
         public float Length
         {
             get {
-                if (!_init)
+                if (!_init && enabled)
                 {
                     Init();
                 } 
@@ -33,12 +33,21 @@ namespace SplineScrubber
 
         public void HandlePosUpdate(Transform target, float t)
         {
+            if (!_init)
+            {
+                return;
+            }
+            
             if (!_evaluateRunner.ReadyForInput)
             {
                 return; //can happen during drag clip
             }
             
             var idx = _scheduler.Schedule(target);
+            if (idx < 0)
+            {
+                return;
+            }
             _evaluateRunner.HandlePosUpdate(t,idx);
         }
 
