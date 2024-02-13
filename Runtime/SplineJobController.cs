@@ -13,13 +13,15 @@ namespace SplineScrubber
         public float Length
         {
             get {
-                if (!_init && enabled)
+                if (!_init && !Stop)
                 {
                     Init();
                 } 
                 return _length;
             }
         }
+        
+        public bool Stop { get; set; } //TODO WORKAROUND
 
         public SplinePath<Spline> SplinePath => _path;
 
@@ -33,7 +35,7 @@ namespace SplineScrubber
 
         public void HandlePosUpdate(Transform target, float t)
         {
-            if (!_init)
+            if (Stop)
             {
                 return;
             }

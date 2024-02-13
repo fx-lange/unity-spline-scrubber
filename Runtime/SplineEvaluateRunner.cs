@@ -40,6 +40,10 @@ namespace SplineScrubber
         
         public JobHandle Run(int batchCount = 2)
         {
+            if (SplineTransform == null) //TODO Workaround
+            {
+                return new JobHandle();
+            }
             SplineEvaluate evaluateJob = new()
             {
                 Spline = Spline,
