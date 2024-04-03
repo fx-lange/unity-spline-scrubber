@@ -23,7 +23,7 @@ namespace SplineScrubber
         private JobHandle _updateTransformHandle;
         
         private int _targetCount = 0;
-        private bool _didRun;
+        private bool _didPrepare;
 
         private static SplineJobsScheduler _instance;
         private static bool _initialized;
@@ -55,7 +55,7 @@ namespace SplineScrubber
 
         private void Update()
         {
-            RunMove(_prepareMoveHandle); //A
+            RunMove(_prepareMoveHandle);
             FinishFrame();
         }
 
@@ -63,11 +63,6 @@ namespace SplineScrubber
         {
             RunEvaluate();
         }
-
-        // private void OnPostRender()
-        // {
-        // RunMove(_prepareMoveHandle); //B
-        // }
 
         public void Register(SplineEvaluateRunner runner)
         {
@@ -77,6 +72,13 @@ namespace SplineScrubber
         public void Unregister(SplineEvaluateRunner runner)
         {
             _evaluateRunners.Remove(runner);
+            if (!_prepareMoveHandle.IsCompleted)
+            {
+                Debug.LogWarning("Force complete due to disabling Evaluate Runner");
+                _prepareMoveHandle.Complete();
+            }
+            
+            runner.Abort();
         }
 
         public int Schedule(Transform target) //TODO if disabled suddenly
@@ -106,7 +108,8 @@ namespace SplineScrubber
             PrepareMove();
             MoveMarker.End();
 
-            _didRun = true;
+            _didPrepare = true;
+            return;
 
             void Evaluate()
             {
@@ -114,7 +117,7 @@ namespace SplineScrubber
                 var jobCount = _evaluateRunners.Count;
                 _evaluateHandles = new NativeArray<JobHandle>(jobCount, Allocator.TempJob);
 
-                for (var idx = 0; idx < _evaluateRunners.Count; idx++)
+                for (var idx = 0; idx < jobCount; idx++)
                 {
                     var evaluateRunner = _evaluateRunners[idx];
                     evaluateRunner.Prepare();
@@ -124,7 +127,7 @@ namespace SplineScrubber
 
             void PrepareMove()
             {
-                int count = _targetCount;
+                var count = _targetCount;
                 var evaluateHandle = JobHandle.CombineDependencies(_evaluateHandles);
                 _prepareMoveHandle = _transformUpdateRunner.PrepareMove(count, _evaluateRunners, evaluateHandle);
             }
@@ -132,22 +135,22 @@ namespace SplineScrubber
 
         private void RunMove(JobHandle dependency)
         {
-            if (!_didRun) return;
+            if (!_didPrepare) return;
             _updateTransformHandle = _transformUpdateRunner.RunMove(dependency);
         }
 
         private void FinishFrame()
         {
-            if (!_didRun) return;
-
+            if (!_didPrepare) return;
             _updateTransformHandle.Complete();
             DisposeAndClear();
         }
 
         private void DisposeAndClear()
         {
-            _didRun = false;
+            _didPrepare = false;
             _targetCount = 0;
+            
             foreach (var evaluate in _evaluateRunners)
             {
                 evaluate.ClearAndDispose();

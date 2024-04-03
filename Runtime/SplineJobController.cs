@@ -13,21 +13,20 @@ namespace SplineScrubber
         public float Length
         {
             get {
-                if (!_init && !Stop)
+                if (!_lengthCached)
                 {
-                    Init();
+                    CacheLength();
                 } 
                 return _length;
             }
         }
-        
-        public bool Stop { get; set; } //TODO WORKAROUND
 
         public SplinePath<Spline> SplinePath => _path;
 
         private SplineJobsScheduler _scheduler;
         private SplineEvaluateRunner _evaluateRunner;
         private float _length;
+        private bool _lengthCached;
         private SplinePath<Spline> _path;
         private NativeSpline _nativeSpline;
         private bool _init;
@@ -35,31 +34,18 @@ namespace SplineScrubber
 
         public void HandlePosUpdate(Transform target, float t)
         {
-            if (Stop)
-            {
-                return;
-            }
+            if (!enabled) return;
+            if (!_evaluateRunner.ReadyForInput) return; //can happen during drag clip
+
+            var idx = _scheduler.Schedule(target); 
+            if (idx < 0) return;
             
-            if (!_evaluateRunner.ReadyForInput)
-            {
-                return; //can happen during drag clip
-            }
-            
-            var idx = _scheduler.Schedule(target);
-            if (idx < 0)
-            {
-                return;
-            }
             _evaluateRunner.HandlePosUpdate(t,idx);
         }
 
         private void OnEnable()
         {
-            if (_init)
-            {
-                return;
-            }
-            
+            if (_init) return;
             Init();
         }
 
@@ -90,7 +76,6 @@ namespace SplineScrubber
             _scheduler.Register(_evaluateRunner);
 
             Spline.Changed += OnSplineChanged;
-            // EditorSplineUtility.AfterSplineWasModified += OnSplineModified;
             PrepareSplineData();
             _init = true;
         }
@@ -98,14 +83,13 @@ namespace SplineScrubber
         private void OnDisable()
         {
             Spline.Changed -= OnSplineChanged;
-            // EditorSplineUtility.AfterSplineWasModified -= OnSplineModified;
-            Dispose();
-            var moveInstance = SplineJobsScheduler.Instance;
-            if (moveInstance != null)
+            
+            if (_scheduler != null)
             {
-                moveInstance.Unregister(_evaluateRunner);
+                _scheduler.Unregister(_evaluateRunner);
             }
-
+            Dispose();
+            
             _init = false;
         }
 
@@ -126,7 +110,8 @@ namespace SplineScrubber
 
         private void PrepareSplineData()
         {
-            _length = _container.CalculateLength();
+            CacheLength();
+            
             _path = new SplinePath<Spline>(_container.Splines);
 
             Dispose();
@@ -134,6 +119,18 @@ namespace SplineScrubber
             _evaluateRunner.Spline = _nativeSpline;
             _evaluateRunner.SplineTransform = _container.transform;
             _disposable = true;
+        }
+
+        private void CacheLength()
+        {
+            if (_container == null)
+            {
+                _length = 0;
+                return;
+            }
+            
+            _length = _container.CalculateLength();
+            _lengthCached = true;
         }
 
         private void Dispose()

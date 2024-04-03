@@ -19,6 +19,9 @@ namespace SplineScrubber
 
         private NativeList<float> _ratios;
 
+        private JobHandle _currJob;
+        private bool _preparedTemp = false;
+
         public SplineEvaluateRunner(int capacity)
         {
             Indices = new NativeList<int>(capacity, Allocator.Persistent);
@@ -34,13 +37,14 @@ namespace SplineScrubber
         public void Prepare()
         {
             ReadyForInput = false;
+            _preparedTemp = true;
             Pos = new NativeArray<float3>(Count, Allocator.TempJob);
             Rotation = new NativeArray<quaternion>(Count, Allocator.TempJob);
         }
         
         public JobHandle Run(int batchCount = 2)
         {
-            if (SplineTransform == null) //TODO Workaround
+            if (SplineTransform == null) //TODO Workaround - to expensive
             {
                 return new JobHandle();
             }
@@ -53,17 +57,34 @@ namespace SplineScrubber
                 LocalToWorld = SplineTransform.localToWorldMatrix,
                 SplineRotation = SplineTransform.rotation
             };
-            return evaluateJob.Schedule(_ratios.Length, batchCount);
+            _currJob = evaluateJob.Schedule(_ratios.Length, batchCount);
+            return _currJob;
+        }
+
+        public void Abort()
+        {
+            if (!_currJob.IsCompleted)
+            {
+                _currJob.Complete();
+            }
+            
+            DisposeTemp();
         }
 
         public void ClearAndDispose()
         {
             Indices.Clear();
             _ratios.Clear();
+            DisposeTemp();
+            ReadyForInput = true;
+        }
+
+        private void DisposeTemp()
+        {
+            if (!_preparedTemp) return;
             Pos.Dispose();
             Rotation.Dispose();
-
-            ReadyForInput = true;
+            _preparedTemp = false;
         }
 
         ~SplineEvaluateRunner()
