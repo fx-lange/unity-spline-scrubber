@@ -25,6 +25,7 @@ All notable changes to this package will be documented in this file. The format 
 * Fixed `SplineJobController` not updating when spline transform changes
 * Fixed crash/exceptions on `SplineJobController` disable/enable during edit mode
 * Fixed `SplineClipData::Length` for timeline starting on awake first frame
+* Fixed life-cycle issue when disabling/deleting `SplineJobController`
 
 ## [0.2.0] - 2023-07
 
