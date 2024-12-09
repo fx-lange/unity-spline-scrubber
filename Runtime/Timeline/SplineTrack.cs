@@ -15,7 +15,6 @@ namespace SplineScrubber.Timeline
     {
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-            Debug.Log("create mixer");
             var clips = GetClips();
             foreach (var clip in clips)
             {
