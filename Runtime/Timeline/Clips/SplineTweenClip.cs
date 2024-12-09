@@ -11,8 +11,9 @@ namespace SplineScrubber.Timeline.Clips
 
         public ClipCaps clipCaps => ClipCaps.ClipIn | ClipCaps.Extrapolation;
 
-        public double Duration { 
-            set => _behaviour.Duration = value;
+        public void UpdateDuration(TimelineClip clip)
+        {
+            _behaviour.Duration = clip.duration + clip.clipIn;
         }
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)

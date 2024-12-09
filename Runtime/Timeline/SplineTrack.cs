@@ -15,6 +15,13 @@ namespace SplineScrubber.Timeline
     {
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
+            Debug.Log("create mixer");
+            var clips = GetClips();
+            foreach (var clip in clips)
+            {
+                var tweenClipAsset = clip.asset as SplineTweenClip;
+                tweenClipAsset?.UpdateDuration(clip);
+            }
             return ScriptPlayable<SplineMixerBehaviour>.Create(graph, inputCount);
         }
     }
